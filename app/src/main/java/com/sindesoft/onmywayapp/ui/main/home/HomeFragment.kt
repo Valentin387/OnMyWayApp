@@ -1,4 +1,4 @@
-package com.sindesoft.onmywayapp.ui.home
+package com.sindesoft.onmywayapp.ui.main.home
 
 import android.os.Bundle
 import android.view.LayoutInflater

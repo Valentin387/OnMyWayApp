@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.sindesoft.onmywayapp.ui.home.HomeFragment"
+        android:name="com.sindesoft.onmywayapp.ui.main.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="com.sindesoft.onmywayapp.ui.gallery.GalleryFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:id="@+id/nav_subscriptions"
+        android:name="com.sindesoft.onmywayapp.ui.main.subscriptions.SubscriptionsFragment"
+        android:label="Subscriptions"
+        tools:layout="@layout/fragment_subscriptions" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.sindesoft.onmywayapp.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_subscribers"
+        android:name="com.sindesoft.onmywayapp.ui.main.subscribers.SubscribersFragment"
+        android:label="Subscribers"
+        tools:layout="@layout/fragment_subscribers" />
 </navigation>
