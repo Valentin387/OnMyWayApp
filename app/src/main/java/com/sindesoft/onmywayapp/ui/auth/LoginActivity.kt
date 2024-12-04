@@ -1,21 +1,27 @@
 package com.sindesoft.onmywayapp.ui.auth
 
 import android.content.Intent
+import android.credentials.GetCredentialRequest
+import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
-import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.PasswordCredential
+import androidx.credentials.PublicKeyCredential
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.fragment.app.FragmentManager.TAG
+import androidx.lifecycle.coroutineScope
 import androidx.navigation.ui.AppBarConfiguration
-import com.sindesoft.onmywayapp.R
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.sindesoft.onmywayapp.databinding.ActivityLoginBinding
 import com.sindesoft.onmywayapp.ui.main.MainActivity
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
 
@@ -46,6 +52,67 @@ class LoginActivity : AppCompatActivity() {
             performLogin()
         }
 
+        signInWithGoogleId()
+
+    }
+
+    private fun signInWithGoogleId(){
+        val webClientId = "947868988264-hebdel2tvbhbgselu3348iqqm61sjvqt.apps.googleusercontent.com"
+
+        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(true)
+            .setServerClientId(webClientId)
+            .setAutoSelectEnabled(true)
+            .setNonce("nonce string to use when generating a Google ID token")
+            .build()
+
+        val credentialManager = CredentialManager.create(this)
+
+        val request = androidx.credentials.GetCredentialRequest(
+            listOf(googleIdOption)
+        )
+
+        lifecycleScope.launch {
+            try {
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = this@LoginActivity,
+                )
+                handleSignIn(result)
+            } catch (e: GetCredentialException) {
+                handleFailure(e)
+            }
+        }
+    }
+
+    private fun handleFailure(e: GetCredentialException) {
+        // Handle the error.
+        Log.e("Error getting credential", e.toString())
+    }
+
+    private fun handleSignIn(result: GetCredentialResponse) {
+        // Handle the successfully returned credential.
+        val credential = result.credential
+
+        when (credential) {
+            is PublicKeyCredential -> {
+                val responseJson = credential.authenticationResponseJson
+                // Share responseJson i.e. a GetCredentialResponse on your server to
+                // validate and  authenticate
+            }
+
+            is PasswordCredential -> {
+                val username = credential.id
+                val password = credential.password
+                // Use id and password to send to your server to validate
+                // and authenticate
+            }
+
+            else -> {
+                // Catch any unrecognized credential type here.
+                Log.e("Unexpected type of credential", credential.toString())
+            }
+        }
     }
 
     private fun goToMainActivity(){
