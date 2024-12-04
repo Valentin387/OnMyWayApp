@@ -7,33 +7,39 @@
     android:padding="16dp">
 
     <!-- Application Icon -->
-    <ImageView
-        android:id="@+id/iv_app_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="logo of the app"
-        android:src="@drawable/ic_launcher_foreground"
-        app:layout_constraintBottom_toTopOf="@+id/tv_login"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.2"
-        android:layout_marginBottom="24dp" />
 
     <!-- Login Text -->
+
+    <ImageView
+        android:id="@+id/iv_app_icon"
+        android:layout_width="324dp"
+        android:layout_height="97dp"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="logo of the app"
+        android:src="@drawable/on_my_way_embedded_logo"
+        app:layout_constraintBottom_toTopOf="@+id/tv_login"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.49"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.2" />
+
+    <!-- Email Input Field -->
+
     <TextView
         android:id="@+id/tv_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:text="@string/app_name"
         android:textSize="40sp"
         app:layout_constraintBottom_toTopOf="@+id/til_user_email"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/iv_app_icon"
-        android:layout_marginBottom="24dp" />
+        app:layout_constraintVertical_bias="2.496" />
 
-    <!-- Email Input Field -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_user_email"
         android:layout_width="match_parent"
