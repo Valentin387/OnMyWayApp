@@ -55,4 +55,10 @@ dependencies {
     // More dependencies
     // security.crypto
     implementation(libs.androidx.security.crypto)
+
+    //convert the dependencies above to Toml format
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+
 }
