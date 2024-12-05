@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialResponse
@@ -21,6 +22,7 @@ import com.sindesoft.onmywayapp.databinding.ActivityLoginBinding
 import com.sindesoft.onmywayapp.ui.main.MainActivity
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
 import androidx.lifecycle.lifecycleScope
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -56,14 +58,18 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
+    //server
+    //947868988264-nd0i5gbgbfo1k8rpdltn85rrfnmq4mdt.apps.googleusercontent.com
+    //android
+    //947868988264-hebdel2tvbhbgselu3348iqqm61sjvqt.apps.googleusercontent.com
+
     private fun signInWithGoogleId(){
-        val webClientId = "947868988264-hebdel2tvbhbgselu3348iqqm61sjvqt.apps.googleusercontent.com"
+        val webClientId = "947868988264-nd0i5gbgbfo1k8rpdltn85rrfnmq4mdt.apps.googleusercontent.com"
 
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true)
             .setServerClientId(webClientId)
-            .setAutoSelectEnabled(true)
-            .setNonce("nonce string to use when generating a Google ID token")
+            .setAutoSelectEnabled(false)
             .build()
 
         val credentialManager = CredentialManager.create(this)
@@ -82,6 +88,7 @@ class LoginActivity : AppCompatActivity() {
             } catch (e: GetCredentialException) {
                 handleFailure(e)
             }
+
         }
     }
 
@@ -93,6 +100,14 @@ class LoginActivity : AppCompatActivity() {
     private fun handleSignIn(result: GetCredentialResponse) {
         // Handle the successfully returned credential.
         val credential = result.credential
+        Log.d("Credential", credential.toString())
+
+        val googleIdTokenCredential = GoogleIdTokenCredential
+            .createFrom(credential.data)
+
+        val googleIdToken = googleIdTokenCredential.idToken
+
+        Log.i("GoogleIdToken", googleIdToken)
 
         when (credential) {
             is PublicKeyCredential -> {
@@ -113,6 +128,7 @@ class LoginActivity : AppCompatActivity() {
                 Log.e("Unexpected type of credential", credential.toString())
             }
         }
+
     }
 
     private fun goToMainActivity(){
