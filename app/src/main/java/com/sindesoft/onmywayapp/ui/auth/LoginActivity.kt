@@ -23,6 +23,7 @@ import com.sindesoft.onmywayapp.ui.main.MainActivity
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.sindesoft.onmywayapp.BuildConfig
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -58,13 +59,10 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    //server
-    //947868988264-nd0i5gbgbfo1k8rpdltn85rrfnmq4mdt.apps.googleusercontent.com
-    //android
-    //947868988264-hebdel2tvbhbgselu3348iqqm61sjvqt.apps.googleusercontent.com
-
     private fun signInWithGoogleId(){
-        val webClientId = "947868988264-nd0i5gbgbfo1k8rpdltn85rrfnmq4mdt.apps.googleusercontent.com"
+
+
+        val webClientId = BuildConfig.WEB_APPLICATION_CLIENT_ID
 
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true)
