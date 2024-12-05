@@ -81,6 +81,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun logout() {
+        //clean all shared preferences
+        val preferences = EncryptedPrefsManager.getPreferences()
+        val editor = preferences.edit()
+        editor.clear()
+        editor.apply()
+
         // Redirect to LoginActivity
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)

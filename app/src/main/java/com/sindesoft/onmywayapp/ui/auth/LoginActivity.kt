@@ -47,6 +47,11 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (checkStoredToken()){
+            goToMainActivity()
+            return
+        }
+
         /*val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)*/
@@ -59,6 +64,24 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
+    private fun checkStoredToken() : Boolean {
+        //check is there is a token stored
+        //val preferences = getSharedPreferences("defaultPrefs", MODE_PRIVATE)
+        val preferences = EncryptedPrefsManager.getPreferences()
+        val googleIdToken = preferences.getString("google_id_token", null)
+        Log.d("LoginActivity", "google_id_token: $googleIdToken")
+        return googleIdToken != null
+    }
+
+    private fun createSessionPreference(googleIdToken: String){
+        //val preferences = getSharedPreferences("defaultPrefs", MODE_PRIVATE)
+        val preferences = EncryptedPrefsManager.getPreferences()
+        val editor = preferences.edit()
+        editor.putString("google_id_token", googleIdToken)
+
+        editor.apply()
+    }
+
     private fun signInWithGoogleId(){
 
 
@@ -67,7 +90,8 @@ class LoginActivity : AppCompatActivity() {
         val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(true)
             .setServerClientId(webClientId)
-            .setAutoSelectEnabled(false)
+            .setAutoSelectEnabled(true)
+            .setNonce("nonce")
             .build()
 
         val credentialManager = CredentialManager.create(this)
@@ -98,14 +122,6 @@ class LoginActivity : AppCompatActivity() {
     private fun handleSignIn(result: GetCredentialResponse) {
         // Handle the successfully returned credential.
         val credential = result.credential
-        Log.d("Credential", credential.toString())
-
-        val googleIdTokenCredential = GoogleIdTokenCredential
-            .createFrom(credential.data)
-
-        val googleIdToken = googleIdTokenCredential.idToken
-
-        Log.i("GoogleIdToken", googleIdToken)
 
         when (credential) {
             is PublicKeyCredential -> {
@@ -121,6 +137,34 @@ class LoginActivity : AppCompatActivity() {
                 // and authenticate
             }
 
+            is CustomCredential -> {
+                // Handle custom credential type here.
+                if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    try {
+                        val googleIdTokenCredential = GoogleIdTokenCredential
+                            .createFrom(credential.data)
+
+                        val googleIdToken = googleIdTokenCredential.idToken
+
+                        Log.i("GoogleIdToken", googleIdToken)
+
+                        // Send the ID token to your server for validation and authentication
+                        //validateGoogleIdTokenOnServer(googleIdToken)
+
+                        // Save the Google ID token in the shared preferences
+                        createSessionPreference(googleIdToken)
+
+                        //Navigate to the main activity
+                        goToMainActivity()
+
+                    } catch (e: Exception) {
+                        Log.e("GoogleIdTokenError", "Failed to parse Google ID token", e)
+                    }
+                }else{
+                    Log.e("CustomCredential", "Unexpected custom credential type: ${credential.type}")
+                }
+
+            }
             else -> {
                 // Catch any unrecognized credential type here.
                 Log.e("Unexpected type of credential", credential.toString())
