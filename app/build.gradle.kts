@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -19,11 +22,31 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Load the properties from the local.properties file
+            val properties = Properties()
+            properties.load(FileInputStream(rootProject.file("local.properties")))
+
+            buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
+            buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
+            buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
+            signingConfig = signingConfigs.getByName("debug")
+        }
+
+        debug{
+            // Load the properties from the local.properties file
+            val properties = Properties()
+            properties.load(FileInputStream(rootProject.file("local.properties")))
+
+            buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
+            buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
+            buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
         }
     }
     compileOptions {
@@ -35,6 +58,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -51,4 +75,15 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // More dependencies
+    // security.crypto
+    implementation(libs.androidx.security.crypto)
+
+    //convert the dependencies above to Toml format
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+
+
 }
