@@ -22,6 +22,7 @@ import com.sindesoft.onmywayapp.databinding.ActivityLoginBinding
 import com.sindesoft.onmywayapp.ui.main.MainActivity
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
 import androidx.lifecycle.lifecycleScope
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.sindesoft.onmywayapp.BuildConfig
 import kotlinx.coroutines.launch
@@ -57,10 +58,11 @@ class LoginActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)*/
 
         binding.btLogin.setOnClickListener {
-            performLogin()
+            //performLogin()
+            signInWithGoogleId()
         }
 
-        signInWithGoogleId()
+        //signInWithGoogleId()
 
     }
 
@@ -87,12 +89,9 @@ class LoginActivity : AppCompatActivity() {
 
         val webClientId = BuildConfig.WEB_APPLICATION_CLIENT_ID
 
-        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
-            .setFilterByAuthorizedAccounts(true)
-            .setServerClientId(webClientId)
-            .setAutoSelectEnabled(true)
-            .setNonce("nonce")
-            .build()
+        val googleIdOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
+            webClientId
+        ).build()
 
         val credentialManager = CredentialManager.create(this)
 
