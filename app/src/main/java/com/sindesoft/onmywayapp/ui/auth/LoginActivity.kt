@@ -108,7 +108,7 @@ class LoginActivity : AppCompatActivity() {
             listOf(googleIdOption)
         )
 
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = credentialManager.getCredential(
                     request = request,
@@ -127,7 +127,7 @@ class LoginActivity : AppCompatActivity() {
         Log.e("Error getting credential", e.toString())
     }
 
-    private fun handleSignIn(result: GetCredentialResponse) {
+    private suspend fun handleSignIn(result: GetCredentialResponse) {
         // Handle the successfully returned credential.
         val credential = result.credential
 
@@ -155,13 +155,12 @@ class LoginActivity : AppCompatActivity() {
                         val googleIdToken = googleIdTokenCredential.idToken
 
                         Log.i("GoogleIdToken", googleIdToken)
-                        val badGoogleIdToken = BuildConfig.BAD_GOOGLE_ID_TOKEN
+                        //val badGoogleIdToken = BuildConfig.BAD_GOOGLE_ID_TOKEN
 
                         // Call the server to decode the Google ID token
-                        callServerDecoder(badGoogleIdToken)
+                        callServerDecoder(googleIdToken)
 
-                        //Navigate to the main activity
-                        goToMainActivity()
+
 
                     } catch (e: Exception) {
                         Log.e("GoogleIdTokenError", "Failed to parse Google ID token", e)
@@ -191,10 +190,8 @@ class LoginActivity : AppCompatActivity() {
     IO - operaciones de entrada y salida, como retrofit
     DEFAULT - operaciones de CPU intensivas
      */
-    private fun callServerDecoder(googleIdToken: String){
+    private suspend fun callServerDecoder(googleIdToken: String){
 
-        // Launch a coroutine to perform the login
-        lifecycleScope.launch(Dispatchers.IO){
             try{
                 // Send the ID token to your server for validation and authentication
                 val response = authService.postLogin(SignInRequest(googleIdToken))
@@ -213,6 +210,7 @@ class LoginActivity : AppCompatActivity() {
                             loginResponse.status,
                             Toast.LENGTH_SHORT
                         ).show()
+                        goToMainActivity()
                     }
 
                 }else{
@@ -237,6 +235,6 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                 }
             }
-        }
+
     }
 }
