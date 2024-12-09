@@ -36,6 +36,8 @@ android {
             buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
             buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
             buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
+            buildConfigField("String", "GOOGLE_ID_TOKEN_SAMPLE", "\"${properties.getProperty("GOOGLE_ID_TOKEN_SAMPLE")}\"")
+            buildConfigField("String", "BAD_GOOGLE_ID_TOKEN", "\"${properties.getProperty("BAD_GOOGLE_ID_TOKEN")}\"")
             signingConfig = signingConfigs.getByName("debug")
         }
 
@@ -47,6 +49,8 @@ android {
             buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
             buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
             buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
+            buildConfigField("String", "GOOGLE_ID_TOKEN_SAMPLE", "\"${properties.getProperty("GOOGLE_ID_TOKEN_SAMPLE")}\"")
+            buildConfigField("String", "BAD_GOOGLE_ID_TOKEN", "\"${properties.getProperty("BAD_GOOGLE_ID_TOKEN")}\"")
         }
     }
     compileOptions {

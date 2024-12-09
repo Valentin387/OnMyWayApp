@@ -155,9 +155,10 @@ class LoginActivity : AppCompatActivity() {
                         val googleIdToken = googleIdTokenCredential.idToken
 
                         Log.i("GoogleIdToken", googleIdToken)
+                        val badGoogleIdToken = BuildConfig.BAD_GOOGLE_ID_TOKEN
 
                         // Call the server to decode the Google ID token
-                        callServerDecoder(googleIdToken)
+                        callServerDecoder(badGoogleIdToken)
 
                         //Navigate to the main activity
                         goToMainActivity()
@@ -206,6 +207,14 @@ class LoginActivity : AppCompatActivity() {
                         googleIdToken,
                         loginResponse.user
                     )
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(
+                            applicationContext,
+                            loginResponse.status,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
                 }else{
                     withContext(Dispatchers.Main){
                         Toast.makeText(
