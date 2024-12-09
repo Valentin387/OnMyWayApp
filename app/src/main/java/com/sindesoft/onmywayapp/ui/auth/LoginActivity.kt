@@ -5,6 +5,7 @@ import android.credentials.GetCredentialRequest
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.credentials.ClearCredentialStateRequest
@@ -24,17 +25,23 @@ import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.gson.Gson
 import com.sindesoft.onmywayapp.BuildConfig
+import com.sindesoft.onmywayapp.data.DTO.SignInRequest
+import com.sindesoft.onmywayapp.data.models.User
+import com.sindesoft.onmywayapp.io.AuthService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityLoginBinding
 
-/*    private val securityCodeLoginService : SecurityCodeLoginService by lazy{
-        SecurityCodeLoginService.create(applicationContext)
-    }*/
+    private val authService : AuthService by lazy{
+        AuthService.create(applicationContext)
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?)
@@ -58,11 +65,8 @@ class LoginActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)*/
 
         binding.btLogin.setOnClickListener {
-            //performLogin()
             signInWithGoogleId()
         }
-
-        //signInWithGoogleId()
 
     }
 
@@ -75,11 +79,16 @@ class LoginActivity : AppCompatActivity() {
         return googleIdToken != null
     }
 
-    private fun createSessionPreference(googleIdToken: String){
+    private fun createSessionPreference(googleIdToken: String, user: User){
         //val preferences = getSharedPreferences("defaultPrefs", MODE_PRIVATE)
         val preferences = EncryptedPrefsManager.getPreferences()
         val editor = preferences.edit()
         editor.putString("google_id_token", googleIdToken)
+
+        // Save the user
+        val gson = Gson()
+        val userJson = gson.toJson(user)
+        editor.putString("user", userJson)
 
         editor.apply()
     }
@@ -99,7 +108,7 @@ class LoginActivity : AppCompatActivity() {
             listOf(googleIdOption)
         )
 
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = credentialManager.getCredential(
                     request = request,
@@ -118,7 +127,7 @@ class LoginActivity : AppCompatActivity() {
         Log.e("Error getting credential", e.toString())
     }
 
-    private fun handleSignIn(result: GetCredentialResponse) {
+    private suspend fun handleSignIn(result: GetCredentialResponse) {
         // Handle the successfully returned credential.
         val credential = result.credential
 
@@ -146,15 +155,12 @@ class LoginActivity : AppCompatActivity() {
                         val googleIdToken = googleIdTokenCredential.idToken
 
                         Log.i("GoogleIdToken", googleIdToken)
+                        //val badGoogleIdToken = BuildConfig.BAD_GOOGLE_ID_TOKEN
 
-                        // Send the ID token to your server for validation and authentication
-                        //validateGoogleIdTokenOnServer(googleIdToken)
+                        // Call the server to decode the Google ID token
+                        callServerDecoder(googleIdToken)
 
-                        // Save the Google ID token in the shared preferences
-                        createSessionPreference(googleIdToken)
 
-                        //Navigate to the main activity
-                        goToMainActivity()
 
                     } catch (e: Exception) {
                         Log.e("GoogleIdTokenError", "Failed to parse Google ID token", e)
@@ -177,49 +183,41 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+
+
     /*
     MAIN - hilo principal
     IO - operaciones de entrada y salida, como retrofit
     DEFAULT - operaciones de CPU intensivas
      */
+    private suspend fun callServerDecoder(googleIdToken: String){
 
-    private fun performLogin(){
-
-        /*val etEmail = binding.etUserEmail.text.toString()
-        val etPassword = binding.etUserPassword.text.toString()*/
-
-        val etEmail = binding.etEmail.text.toString()
-        val etPassword = binding.etUserPassword.text.toString()
-
-        goToMainActivity()
-
-        /*
-        if (etEmail.isEmpty() || etPassword.isEmpty()){
-            Toast.makeText(applicationContext,"Fill all the fields please", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Launch a coroutine to perform the login
-        lifecycleScope.launch(Dispatchers.IO){
             try{
-                val loginRequest = LoginRequest(code = etSecurityCode)
-                val response = securityCodeLoginService.postLogin(loginRequest)
+                // Send the ID token to your server for validation and authentication
+                val response = authService.postLogin(SignInRequest(googleIdToken))
 
                 if(response.isSuccessful) {
                     val loginResponse = response.body()!!
-                    *//*Log.d("LoginActivity", "JWT: ${loginResponse.token}")
-                    Log.d("LoginActivity", "User: ${loginResponse.user}")
-                    Log.d("LoginActivity","refresh: ${loginResponse.refresh}")*//*
-                    createSessionPreference(loginResponse.token, loginResponse.user, loginResponse.refresh)
-
+                    Log.d("LoginActivity", "Status: ${loginResponse.status}")
+                    Log.d("LoginActivity","User: ${loginResponse.user}")
+                    createSessionPreference(
+                        googleIdToken,
+                        loginResponse.user
+                    )
                     withContext(Dispatchers.Main){
+                        Toast.makeText(
+                            applicationContext,
+                            loginResponse.status,
+                            Toast.LENGTH_SHORT
+                        ).show()
                         goToMainActivity()
                     }
+
                 }else{
                     withContext(Dispatchers.Main){
                         Toast.makeText(
                             applicationContext,
-                            getString(R.string.Invalid_credentials),
+                            "Invalid_credentials",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -232,11 +230,11 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(
                         applicationContext,
                         //"Exception: ${e.message}",
-                        getString(R.string.Login_exception),
+                        "Login_exception",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
-        }*/
+
     }
 }
