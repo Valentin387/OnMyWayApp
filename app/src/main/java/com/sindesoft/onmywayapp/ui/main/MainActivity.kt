@@ -14,7 +14,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
 import com.sindesoft.onmywayapp.R
+import com.sindesoft.onmywayapp.data.models.User
 import com.sindesoft.onmywayapp.databinding.ActivityMainBinding
 import com.sindesoft.onmywayapp.ui.auth.LoginActivity
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
@@ -53,6 +55,14 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        val preferences = EncryptedPrefsManager.getPreferences()
+        //get the user
+        val gson = Gson()
+        val userJson = preferences.getString("user", null)
+        val user = gson.fromJson(userJson, User::class.java)
+        Log.d("MainActivity", "User: $user")
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

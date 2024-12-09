@@ -85,5 +85,9 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 
+    //retrofit HTTP requests
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson.converter)
+
 
 }
