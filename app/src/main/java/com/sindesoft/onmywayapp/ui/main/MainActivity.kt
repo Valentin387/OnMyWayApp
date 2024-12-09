@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
 import androidx.navigation.findNavController
@@ -14,10 +15,12 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.sindesoft.onmywayapp.R
 import com.sindesoft.onmywayapp.data.models.User
 import com.sindesoft.onmywayapp.databinding.ActivityMainBinding
+import com.sindesoft.onmywayapp.databinding.NavHeaderMainBinding
 import com.sindesoft.onmywayapp.ui.auth.LoginActivity
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
 import kotlinx.coroutines.CoroutineScope
@@ -62,6 +65,17 @@ class MainActivity : AppCompatActivity() {
         val userJson = preferences.getString("user", null)
         val user = gson.fromJson(userJson, User::class.java)
         Log.d("MainActivity", "User: $user")
+
+        //access the nav_header_main view
+        val navHeaderMainBinding = NavHeaderMainBinding.bind(navView.getHeaderView(0))
+        val profileImage: ImageView = navHeaderMainBinding.profileImage
+        Glide.with(this)
+            .load(user.profilePicture) // Load the URL from the user object
+            .placeholder(R.mipmap.ic_launcher_round) // Optional: Placeholder image
+            .error(R.mipmap.ic_launcher_round) // Optional: Error image
+            .into(profileImage)
+        navHeaderMainBinding.tvFullName.text = user.familyName + " " + user.givenName
+        navHeaderMainBinding.tvEmail.text = user.email
 
     }
 
