@@ -135,8 +135,8 @@ class PermissionsActivity: AppCompatActivity() {
                 // Prompt the user to enable "Always" location
                 showAlwaysLocationPrompt()
             } else {
-                Log.d("PermissionsActivity", "Location permission is NOT set to Always")
-                Toast.makeText(this, "Location permission is NOT set to Always!", Toast.LENGTH_SHORT)
+                Log.d("PermissionsActivity", "Location permission is set to Always")
+                Toast.makeText(this, "Location permission is set to Always!", Toast.LENGTH_SHORT)
                     .show()
             }
         }
@@ -147,7 +147,9 @@ class PermissionsActivity: AppCompatActivity() {
             .setTitle("Change Location Access")
             .setMessage("For the app to work correctly, " +
                     "we need access to your location all the time. " +
-                    "Please enable 'Always Allow' in the settings."
+                    "Click 'Open Settings' search OnMyWayApp." +
+                    "Please enable 'Always Allow' in the settings." +
+                    "Go back to the app and click 'NEXT'."
             )
             .setPositiveButton("Open Settings") { _, _ ->
                 openAppSettings()
@@ -157,9 +159,7 @@ class PermissionsActivity: AppCompatActivity() {
     }
 
     private fun openAppSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.fromParts("package", packageName, null)
-        }
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         startActivity(intent)
     }
 
