@@ -37,20 +37,10 @@ class PermissionsActivity: AppCompatActivity() {
         binding = ActivityPermissionsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Example of associating a checkbox with a permission
-        permissionCheckboxMap[binding.permissionNotifications] = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            android.Manifest.permission.POST_NOTIFICATIONS
-        }else{
-            android.Manifest.permission.INTERNET
-        }
-        permissionCheckboxMap[binding.permissionLocation] = android.Manifest.permission.ACCESS_FINE_LOCATION
-
         // Handle the "NEXT" button click
         binding.buttonSend.setOnClickListener {
             Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
-
         }
-
 
     }
 
@@ -98,8 +88,6 @@ class PermissionsActivity: AppCompatActivity() {
             }
             updateSendButtonState()
         }
-
-
     }
 
     private fun showBatteryOptimizationDialog() {
@@ -107,8 +95,8 @@ class PermissionsActivity: AppCompatActivity() {
             .setTitle("Battery Optimization")
             .setMessage("For the app to work correctly, " +
                     "we need to disable battery optimization. " +
-                    "Click 'Open Settings' search OnMyWayApp." +
-                    "Please disable battery optimization in the settings." +
+                    "Click 'Open Settings' then click on 'Battery'." +
+                    "Please disable battery optimization." +
                     "Go back to the app and click 'NEXT'."
             )
             .setPositiveButton("Open Settings") { _, _ ->
@@ -132,10 +120,6 @@ class PermissionsActivity: AppCompatActivity() {
                         permissionsNeeded.toTypedArray(),
                         REQUEST_CODE_PERMISSIONS
                     )
-                }else{
-                    //get the checkbox associated with the permission
-                    val checkBox = permissionCheckboxMap.entries.find { it.value == permission }?.key
-                    //checkBox?.isChecked = false
                 }
             }
         } else {
@@ -155,9 +139,6 @@ class PermissionsActivity: AppCompatActivity() {
                 arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_CODE_PERMISSIONS
             )
-            //get the checkbox associated with the permission
-            val checkBox = permissionCheckboxMap.entries.find { it.value == android.Manifest.permission.ACCESS_FINE_LOCATION }?.key
-            //checkBox?.isChecked = false
         }else{
             Log.d("PermissionsActivity", "Permission ACCESS_FINE_LOCATION granted")
             Toast.makeText(this, "FINE location granted!", Toast.LENGTH_SHORT).show()
@@ -168,8 +149,6 @@ class PermissionsActivity: AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED) {
                 // Prompt the user to enable "Always" location
                 showAlwaysLocationPrompt()
-                val checkBox = permissionCheckboxMap.entries.find { it.value == android.Manifest.permission.ACCESS_FINE_LOCATION }?.key
-                //checkBox?.isChecked = false
             } else {
                 Log.d("PermissionsActivity", "Location permission is set to Always")
                 Toast.makeText(this, "Location permission is set to Always!", Toast.LENGTH_SHORT)
@@ -183,8 +162,8 @@ class PermissionsActivity: AppCompatActivity() {
             .setTitle("Change Location Access")
             .setMessage("For the app to work correctly, " +
                     "we need access to your location all the time. " +
-                    "Click 'Open Settings' search OnMyWayApp." +
-                    "Please enable 'Always Allow' in the settings." +
+                    "Click 'Open Settings' then click 'Permissions' then 'Location'" +
+                    "Please enable 'Allow all the time' in the settings." +
                     "Go back to the app and click 'NEXT'."
             )
             .setPositiveButton("Open Settings") { _, _ ->
