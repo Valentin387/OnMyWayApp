@@ -24,6 +24,8 @@ import com.sindesoft.onmywayapp.data.models.User
 import com.sindesoft.onmywayapp.databinding.ActivityMainBinding
 import com.sindesoft.onmywayapp.databinding.NavHeaderMainBinding
 import com.sindesoft.onmywayapp.ui.auth.LoginActivity
+import com.sindesoft.onmywayapp.ui.permissions.PermissionsActivity
+import com.sindesoft.onmywayapp.utils.CustomPermissionHandler
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+    private lateinit var permissionHandler: CustomPermissionHandler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +82,15 @@ class MainActivity : AppCompatActivity() {
         navHeaderMainBinding.tvFullName.text = user.familyName + " " + user.givenName
         navHeaderMainBinding.tvEmail.text = user.email
 
+        //Fine-grained permission handling here
+        permissionHandler = CustomPermissionHandler(this)
+
+    }
+
+    private fun goToPermissionsActivity(){
+        val intent = Intent(this, PermissionsActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -129,5 +141,26 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(intent)
     }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("MainActivity", "onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("MainActivity", "onStop")
+    }
+
+    //this will be useful later on. Trust me
+    fun requestPermissionsFromFragment() : Boolean {
+        return permissionHandler.checkAndRequestPermissions(this)
+    }
+
 
 }

@@ -18,6 +18,8 @@ import androidx.core.app.ActivityCompat
 import androidx.navigation.ui.AppBarConfiguration
 import com.sindesoft.onmywayapp.databinding.ActivityMainBinding
 import com.sindesoft.onmywayapp.databinding.ActivityPermissionsBinding
+import com.sindesoft.onmywayapp.ui.main.MainActivity
+import com.sindesoft.onmywayapp.utils.CustomPermissionHandler
 
 
 class PermissionsActivity: AppCompatActivity() {
@@ -26,6 +28,7 @@ class PermissionsActivity: AppCompatActivity() {
     private lateinit var binding: ActivityPermissionsBinding
     private val permissionsNeeded = mutableListOf<String>()
     private val permissionCheckboxMap = mutableMapOf<CheckBox, String>()
+    private lateinit var permissionHandler: CustomPermissionHandler //use it only in the fragments
 
     companion object {
         const val REQUEST_CODE_PERMISSIONS = 1001
@@ -51,15 +54,31 @@ class PermissionsActivity: AppCompatActivity() {
                     .show()
             }else{
                 Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
+                goToMainActivity()
             }
         }
 
     }
 
+    private fun goToMainActivity(){
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     override fun onResume() {
         super.onResume()
         Log.d("PermissionsActivity", "onResume")
+    }
 
+    override fun onPause() {
+        super.onPause()
+        Log.d("PermissionsActivity", "onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("PermissionsActivity", "onStop")
     }
 
     private fun allPermissionsGranted() : Boolean {
