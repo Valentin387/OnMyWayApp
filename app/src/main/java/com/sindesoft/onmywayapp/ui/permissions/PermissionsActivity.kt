@@ -7,6 +7,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -91,8 +92,38 @@ class PermissionsActivity: AppCompatActivity() {
             handleLocationPermission()
         }
 
+        binding.permissionBattery.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+
+                if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+                    // The app is constrained, show the dialog
+                    showBatteryOptimizationDialog()
+                } else {
+                    Toast.makeText(this, "Battery optimization already disabled for this app.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
 
     }
+
+    private fun showBatteryOptimizationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Battery Optimization")
+            .setMessage("For the app to work correctly, " +
+                    "we need to disable battery optimization. " +
+                    "Click 'Open Settings' search OnMyWayApp." +
+                    "Please disable battery optimization in the settings." +
+                    "Go back to the app and click 'NEXT'."
+            )
+            .setPositiveButton("Open Settings") { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
 
     private fun handlePermission(isChecked: Boolean, vararg permissions: String){
         if (isChecked) {
@@ -159,7 +190,9 @@ class PermissionsActivity: AppCompatActivity() {
     }
 
     private fun openAppSettings() {
-        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
         startActivity(intent)
     }
 
