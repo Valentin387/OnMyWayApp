@@ -24,7 +24,12 @@
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:theme="@style/Theme.OnMyWayApp.NoActionBar">
+        </activity>
+
+        <activity
+            android:name=".ui.permissions.PermissionsActivity"
+            android:exported="false"
             android:theme="@style/Theme.OnMyWayApp.NoActionBar">
         </activity>
 
