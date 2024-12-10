@@ -39,9 +39,62 @@ class PermissionsActivity: AppCompatActivity() {
 
         // Handle the "NEXT" button click
         binding.buttonSend.setOnClickListener {
-            Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
+            if(!allPermissionsGranted()) {
+                AlertDialog.Builder(this)
+                    .setTitle("Permissions Needed")
+                    .setMessage("The app needs the following permissions to work correctly: $permissionsNeeded")
+                    .setPositiveButton("OK"){ _, _ ->
+                        binding.permissionNotifications.isChecked = false
+                        binding.permissionLocation.isChecked = false
+                        binding.permissionBattery.isChecked = false
+                    }
+                    .show()
+            }else{
+                Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
+            }
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("PermissionsActivity", "onResume")
+
+    }
+
+    private fun allPermissionsGranted() : Boolean {
+        val permissions = mutableListOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.INTERNET
+        )
+
+        // Add POST_NOTIFICATIONS permission for devices running Tiramisu or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            permissions.add(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        }
+
+        permissions.forEach { permission ->
+            if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                Log.d("PermissionsActivity", "Permission $permission needed")
+                permissionsNeeded.add(permission)
+            }
+        }
+
+        if (permissionsNeeded.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsNeeded.toTypedArray(),
+                REQUEST_CODE_PERMISSIONS
+            )
+            return false
+        }else{
+            return true
+        }
     }
 
     override fun onStart() {
@@ -88,6 +141,11 @@ class PermissionsActivity: AppCompatActivity() {
             }
             updateSendButtonState()
         }
+    }
+
+    private fun isBatteryUnconstrained(): Boolean {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isIgnoringBatteryOptimizations(packageName)
     }
 
     private fun showBatteryOptimizationDialog() {
@@ -162,8 +220,8 @@ class PermissionsActivity: AppCompatActivity() {
             .setTitle("Change Location Access")
             .setMessage("For the app to work correctly, " +
                     "we need access to your location all the time. " +
-                    "Click 'Open Settings' then click 'Permissions' then 'Location'" +
-                    "Please enable 'Allow all the time' in the settings." +
+                    "Click 'Open Settings' then click 'Permissions' then 'Location' " +
+                    "Please enable 'Allow all the time' and 'Use Precise Location' in the settings." +
                     "Go back to the app and click 'NEXT'."
             )
             .setPositiveButton("Open Settings") { _, _ ->
@@ -188,8 +246,13 @@ class PermissionsActivity: AppCompatActivity() {
             binding.permissionBattery
         )
 
+
         // Enable the button only if all checkboxes are checked
         binding.buttonSend.isEnabled = checkBoxes.all { it.isChecked }
+
+
+        // Enable the button only if all checkboxes are checked
+        //binding.buttonSend.isEnabled = checkBoxes.all { it.isChecked }
     }
 
 
