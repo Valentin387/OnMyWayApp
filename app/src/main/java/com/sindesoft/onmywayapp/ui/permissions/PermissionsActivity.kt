@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +25,7 @@ class PermissionsActivity: AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityPermissionsBinding
     private val permissionsNeeded = mutableListOf<String>()
+    private val permissionCheckboxMap = mutableMapOf<CheckBox, String>()
 
     companion object {
         const val REQUEST_CODE_PERMISSIONS = 1001
@@ -35,37 +37,26 @@ class PermissionsActivity: AppCompatActivity() {
         binding = ActivityPermissionsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //Enable the "NEXT" button only if all permissions are granted
-        val checkBoxes = listOf(
-            binding.permissionNotifications,
-        )
-
-        checkBoxes.forEach { checkBox ->
-            checkBox.setOnCheckedChangeListener { _, _ ->
-                binding.buttonSend.isEnabled = checkBoxes.all { it.isChecked }
-            }
+        // Example of associating a checkbox with a permission
+        permissionCheckboxMap[binding.permissionNotifications] = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            android.Manifest.permission.POST_NOTIFICATIONS
+        }else{
+            android.Manifest.permission.INTERNET
         }
+        permissionCheckboxMap[binding.permissionLocation] = android.Manifest.permission.ACCESS_FINE_LOCATION
 
         // Handle the "NEXT" button click
         binding.buttonSend.setOnClickListener {
-            if (permissionsNeeded.isNotEmpty()) {
-                // Ask for permissions if any are still needed
-                ActivityCompat.requestPermissions(
-                    this,
-                    permissionsNeeded.toTypedArray(),
-                    REQUEST_CODE_PERMISSIONS
-                )
-            } else {
-                Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
-            }
+            Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
+
         }
 
 
     }
 
-    override fun onResume() {
-        super.onResume()
-        Log.d("PermissionsActivity", "onResume")
+    override fun onStart() {
+        super.onStart()
+        Log.d("PermissionsActivity", "onStart")
 
         binding.permissionNotifications.setOnCheckedChangeListener { _, isChecked ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -79,6 +70,7 @@ class PermissionsActivity: AppCompatActivity() {
                     android.Manifest.permission.INTERNET, //Default permission, automatically granted
                 )
             }
+            updateSendButtonState()
         }
 
         binding.permissionLocation.setOnCheckedChangeListener { _, isChecked ->
@@ -90,6 +82,7 @@ class PermissionsActivity: AppCompatActivity() {
             // I need to check if the user granted the FINE location permission and
             // also prompt them to change the authorisation level from "While the app is in use" to "Always"
             handleLocationPermission()
+            updateSendButtonState()
         }
 
         binding.permissionBattery.setOnCheckedChangeListener { _, isChecked ->
@@ -103,6 +96,7 @@ class PermissionsActivity: AppCompatActivity() {
                     Toast.makeText(this, "Battery optimization already disabled for this app.", Toast.LENGTH_SHORT).show()
                 }
             }
+            updateSendButtonState()
         }
 
 
@@ -120,7 +114,9 @@ class PermissionsActivity: AppCompatActivity() {
             .setPositiveButton("Open Settings") { _, _ ->
                 openAppSettings()
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton("Cancel"){ _, _ ->
+                binding.permissionBattery.isChecked = false
+            }
             .show()
     }
 
@@ -136,6 +132,10 @@ class PermissionsActivity: AppCompatActivity() {
                         permissionsNeeded.toTypedArray(),
                         REQUEST_CODE_PERMISSIONS
                     )
+                }else{
+                    //get the checkbox associated with the permission
+                    val checkBox = permissionCheckboxMap.entries.find { it.value == permission }?.key
+                    //checkBox?.isChecked = false
                 }
             }
         } else {
@@ -155,6 +155,9 @@ class PermissionsActivity: AppCompatActivity() {
                 arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_CODE_PERMISSIONS
             )
+            //get the checkbox associated with the permission
+            val checkBox = permissionCheckboxMap.entries.find { it.value == android.Manifest.permission.ACCESS_FINE_LOCATION }?.key
+            //checkBox?.isChecked = false
         }else{
             Log.d("PermissionsActivity", "Permission ACCESS_FINE_LOCATION granted")
             Toast.makeText(this, "FINE location granted!", Toast.LENGTH_SHORT).show()
@@ -165,6 +168,8 @@ class PermissionsActivity: AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED) {
                 // Prompt the user to enable "Always" location
                 showAlwaysLocationPrompt()
+                val checkBox = permissionCheckboxMap.entries.find { it.value == android.Manifest.permission.ACCESS_FINE_LOCATION }?.key
+                //checkBox?.isChecked = false
             } else {
                 Log.d("PermissionsActivity", "Location permission is set to Always")
                 Toast.makeText(this, "Location permission is set to Always!", Toast.LENGTH_SHORT)
@@ -196,6 +201,17 @@ class PermissionsActivity: AppCompatActivity() {
         startActivity(intent)
     }
 
+    private fun updateSendButtonState() {
+        // List of all checkboxes
+        val checkBoxes = listOf(
+            binding.permissionLocation,
+            binding.permissionNotifications,
+            binding.permissionBattery
+        )
+
+        // Enable the button only if all checkboxes are checked
+        binding.buttonSend.isEnabled = checkBoxes.all { it.isChecked }
+    }
 
 
 
