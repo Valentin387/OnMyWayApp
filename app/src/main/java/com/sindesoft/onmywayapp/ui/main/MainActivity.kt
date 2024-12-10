@@ -1,9 +1,11 @@
 package com.sindesoft.onmywayapp.ui.main
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.provider.Settings
 import android.view.MenuItem
 import android.widget.ImageView
 import com.google.android.material.snackbar.Snackbar
@@ -100,6 +102,10 @@ class MainActivity : AppCompatActivity() {
                 logout() // Show a confirmation dialog before logging out
                 true
             }
+            R.id.action_settings -> {
+                openAppSettings()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -115,6 +121,13 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
+        startActivity(intent)
     }
 
 }

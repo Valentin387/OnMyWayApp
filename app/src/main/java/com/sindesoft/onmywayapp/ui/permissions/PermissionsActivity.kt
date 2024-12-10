@@ -1,10 +1,16 @@
 package com.sindesoft.onmywayapp.ui.permissions
 
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.navigation.ui.AppBarConfiguration
@@ -28,29 +34,11 @@ class PermissionsActivity: AppCompatActivity() {
         binding = ActivityPermissionsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //set up CheckBoxes listeners
-        Log.d("PermissionsActivity", "onCreate")
-        binding.permissionNotifications.setOnCheckedChangeListener { _, isChecked ->
-            Log.d("PermissionsActivity", "Notifications")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Log.d("PermissionsActivity", "TIRAMISU")
-                handlePermission(
-                    isChecked,
-                    android.Manifest.permission.POST_NOTIFICATIONS,
-                )
-            }else{
-                Log.d("PermissionsActivity", "PRE-TIRAMISU")
-                handlePermission(
-                    isChecked,
-                    android.Manifest.permission.INTERNET, //Default permission, automatically granted
-                )
-            }
-        }
-
         //Enable the "NEXT" button only if all permissions are granted
         val checkBoxes = listOf(
             binding.permissionNotifications,
         )
+
         checkBoxes.forEach { checkBox ->
             checkBox.setOnCheckedChangeListener { _, _ ->
                 binding.buttonSend.isEnabled = checkBoxes.all { it.isChecked }
@@ -74,18 +62,107 @@ class PermissionsActivity: AppCompatActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.d("PermissionsActivity", "onResume")
+
+        binding.permissionNotifications.setOnCheckedChangeListener { _, isChecked ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                handlePermission(
+                    isChecked,
+                    android.Manifest.permission.POST_NOTIFICATIONS,
+                )
+            }else{
+                handlePermission(
+                    isChecked,
+                    android.Manifest.permission.INTERNET, //Default permission, automatically granted
+                )
+            }
+        }
+
+        binding.permissionLocation.setOnCheckedChangeListener { _, isChecked ->
+            handlePermission(
+                isChecked,
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+            // I need to check if the user granted the FINE location permission and
+            // also prompt them to change the authorisation level from "While the app is in use" to "Always"
+            handleLocationPermission()
+        }
+
+
+    }
+
     private fun handlePermission(isChecked: Boolean, vararg permissions: String){
         if (isChecked) {
             permissions.forEach { permission ->
                 if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                     Log.d("PermissionsActivity", "Permission $permission needed")
                     permissionsNeeded.add(permission)
+                    ActivityCompat.requestPermissions(
+                        this,
+                        permissionsNeeded.toTypedArray(),
+                        REQUEST_CODE_PERMISSIONS
+                    )
                 }
             }
         } else {
             permissionsNeeded.removeAll(permissions.toList())
         }
     }
+
+    private fun handleLocationPermission(){
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED){
+            Log.d("PermissionsActivity", "Permission ACCESS_FINE_LOCATION needed")
+            //Request FINE location permission
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_CODE_PERMISSIONS
+            )
+        }else{
+            Log.d("PermissionsActivity", "Permission ACCESS_FINE_LOCATION granted")
+            Toast.makeText(this, "FINE location granted!", Toast.LENGTH_SHORT).show()
+        }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+                // Prompt the user to enable "Always" location
+                showAlwaysLocationPrompt()
+            } else {
+                Log.d("PermissionsActivity", "Location permission is NOT set to Always")
+                Toast.makeText(this, "Location permission is NOT set to Always!", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+    }
+
+    private fun showAlwaysLocationPrompt() {
+        AlertDialog.Builder(this)
+            .setTitle("Change Location Access")
+            .setMessage("For the app to work correctly, " +
+                    "we need access to your location all the time. " +
+                    "Please enable 'Always Allow' in the settings."
+            )
+            .setPositiveButton("Open Settings") { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
+        startActivity(intent)
+    }
+
 
 
 
