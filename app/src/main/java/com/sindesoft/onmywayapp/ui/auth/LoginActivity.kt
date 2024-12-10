@@ -30,6 +30,7 @@ import com.sindesoft.onmywayapp.BuildConfig
 import com.sindesoft.onmywayapp.data.DTO.SignInRequest
 import com.sindesoft.onmywayapp.data.models.User
 import com.sindesoft.onmywayapp.io.AuthService
+import com.sindesoft.onmywayapp.ui.permissions.PermissionsActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,7 +57,8 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         if (checkStoredToken()){
-            goToMainActivity()
+            //goToMainActivity()
+            goToPermissionsActivity()
             return
         }
 
@@ -183,6 +185,11 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun goToPermissionsActivity(){
+        startActivity(Intent(this, PermissionsActivity::class.java))
+        finish()
+    }
+
 
 
     /*
@@ -210,7 +217,8 @@ class LoginActivity : AppCompatActivity() {
                             loginResponse.status,
                             Toast.LENGTH_SHORT
                         ).show()
-                        goToMainActivity()
+                        //goToMainActivity()
+                        goToPermissionsActivity()
                     }
 
                 }else{
