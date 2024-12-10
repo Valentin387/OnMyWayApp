@@ -1,10 +1,12 @@
 package com.sindesoft.onmywayapp.ui.auth
 
+import android.app.ProgressDialog
 import android.content.Intent
 import android.credentials.GetCredentialRequest
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -208,9 +210,17 @@ class LoginActivity : AppCompatActivity() {
     private suspend fun callServerDecoder(googleIdToken: String){
 
             try{
+                // Show the ProgressBar
+                withContext(Dispatchers.Main){
+                    showLoadingSpinner()
+                }
                 // Send the ID token to your server for validation and authentication
                 val response = authService.postLogin(SignInRequest(googleIdToken))
 
+                // Hide the ProgressBar
+                withContext(Dispatchers.Main){
+                    hideLoadingSpinner()
+                }
                 if(response.isSuccessful) {
                     val loginResponse = response.body()!!
                     Log.d("LoginActivity", "Status: ${loginResponse.status}")
@@ -240,7 +250,7 @@ class LoginActivity : AppCompatActivity() {
                 }
 
             }catch(e: Exception){
-                //Log.d("LoginActivity", e.toString())
+                Log.d("LoginActivity", e.toString())
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
@@ -251,6 +261,13 @@ class LoginActivity : AppCompatActivity() {
                     ).show()
                 }
             }
+    }
 
+    private fun showLoadingSpinner() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingSpinner() {
+        binding.progressBar.visibility = View.GONE
     }
 }
