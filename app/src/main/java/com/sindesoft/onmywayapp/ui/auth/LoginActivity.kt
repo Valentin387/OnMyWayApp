@@ -30,6 +30,8 @@ import com.sindesoft.onmywayapp.BuildConfig
 import com.sindesoft.onmywayapp.data.DTO.SignInRequest
 import com.sindesoft.onmywayapp.data.models.User
 import com.sindesoft.onmywayapp.io.AuthService
+import com.sindesoft.onmywayapp.ui.permissions.PermissionsActivity
+import com.sindesoft.onmywayapp.utils.CustomPermissionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,6 +40,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var permissionHandler: CustomPermissionHandler
 
     private val authService : AuthService by lazy{
         AuthService.create(applicationContext)
@@ -55,8 +58,15 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //Fine-grained permission handling here
+        permissionHandler = CustomPermissionHandler(this)
+
         if (checkStoredToken()){
-            goToMainActivity()
+            if(permissionHandler.checkAndRequestPermissions(this)){
+                goToMainActivity()
+            }else{
+                goToPermissionsActivity()
+            }
             return
         }
 
@@ -183,6 +193,11 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun goToPermissionsActivity(){
+        startActivity(Intent(this, PermissionsActivity::class.java))
+        finish()
+    }
+
 
 
     /*
@@ -210,7 +225,8 @@ class LoginActivity : AppCompatActivity() {
                             loginResponse.status,
                             Toast.LENGTH_SHORT
                         ).show()
-                        goToMainActivity()
+                        //goToMainActivity()
+                        goToPermissionsActivity()
                     }
 
                 }else{
