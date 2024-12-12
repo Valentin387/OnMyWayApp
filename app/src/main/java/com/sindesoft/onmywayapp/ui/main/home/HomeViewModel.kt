@@ -19,58 +19,22 @@ class HomeViewModel : ViewModel() {
     }
     val text: LiveData<String> = _text
 
-    private val webSocketClient = WebSocketClient()
-
-    private val _connectionStatus = MutableStateFlow(false)
-    val connectionStatus: StateFlow<Boolean> = _connectionStatus
-
-    private val _messages = MutableStateFlow<List<String>>(emptyList())
-    val messages: StateFlow<List<String>> = _messages
+    private val _messages = MutableLiveData<MutableList<String>>()
+    val messages: LiveData<MutableList<String>> = _messages
 
     init {
-        connectToWebSocket()
-        collectMessages()
+        _messages.value = mutableListOf() // Initialize the messages list
     }
 
-    private fun connectToWebSocket() {
-        Log.d("HomeViewModel", "Connecting to WebSocket")
-        viewModelScope.launch {
-            try {
-                Log.d("HomeViewModel", "Connecting to WebSocket")
-                webSocketClient.connect()
-                _connectionStatus.value = true
-            } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error connecting to WebSocket: ${e.message}")
-                _connectionStatus.value = false
-            }
-        }
+    private fun addMessage(message: String) {
+        // Add the new message to the list
+        val currentMessages = _messages.value ?: mutableListOf()
+        currentMessages.add(message)
+        _messages.value = currentMessages
     }
 
-    private fun collectMessages() {
-        Log.d("HomeViewModel", "Collecting messages")
-        viewModelScope.launch {
-            webSocketClient.messages
-                .collect { message ->
-                    _messages.value += message
-                }
-        }
+    fun getMessageCount(): Int {
+        return _messages.value?.size ?: 0
     }
-
-    fun sendMessage(message: String) {
-        Log.d("HomeViewModel", "Sending message: $message")
-        viewModelScope.launch {
-            webSocketClient.sendMessage(message)
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        Log.d("HomeViewModel", "Disconnecting from WebSocket")
-        viewModelScope.launch {
-            webSocketClient.disconnect()
-        }
-    }
-
-
 
 }

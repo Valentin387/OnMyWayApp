@@ -26,7 +26,13 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:padding="16dp"
-        android:text="Messages will appear here" />
+        android:text="Last Message will appear here" />
+
+    <TextView
+        android:id="@+id/messageCounter"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:padding="16dp" />
 
     <EditText
         android:id="@+id/messageInput"
