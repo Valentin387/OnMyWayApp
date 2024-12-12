@@ -1,6 +1,6 @@
 [versions]
 agp = "8.5.2"
-kotlin = "1.9.0"
+kotlin = "2.1.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -16,6 +16,7 @@ securityCrypto = "1.1.0-alpha06"
 credentials = "1.3.0"
 googleId = "1.1.1"
 glide = "4.16.0"
+ktor = "2.3.13"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +35,8 @@ androidx-credentials = { group = "androidx.credentials", name = "credentials", v
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleId" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 
 # Add Retrofit and Gson dependencies
