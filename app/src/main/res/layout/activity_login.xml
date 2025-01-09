@@ -27,51 +27,6 @@
         android:textSize="40sp"
         android:layout_gravity="center_horizontal"/>
 
-    <!-- Email Input Field -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/til_user_email"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:startIconDrawable="@drawable/baseline_email_24"
-        android:layout_marginBottom="16dp">
-
-        <EditText
-            android:id="@+id/et_email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="Enter your e-mail"
-            android:hint="email"
-            android:inputType="textEmailAddress"
-            android:maxLength="25"
-            android:padding="15dp"
-            android:paddingStart="48dp"
-            android:paddingEnd="2dp"
-            android:textSize="15sp" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Password Input Field -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/til_user_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:startIconDrawable="@drawable/baseline_security_24"
-        app:endIconMode="password_toggle"
-        android:layout_marginBottom="16dp">
-
-        <EditText
-            android:id="@+id/et_user_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="Password"
-            android:hint="password"
-            android:inputType="textPassword"
-            android:maxLength="40"
-            android:padding="15dp"
-            android:paddingStart="48dp"
-            android:paddingEnd="2dp"
-            android:textSize="15sp" />
-    </com.google.android.material.textfield.TextInputLayout>
-
     <!-- ProgressBar -->
     <ProgressBar
         android:id="@+id/progressBar"
