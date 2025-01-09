@@ -22,16 +22,12 @@ class SubscriptionsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val galleryViewModel =
+        val subscriptionsViewModel =
             ViewModelProvider(this)[SubscriptionsViewModel::class.java]
 
         _binding = FragmentSubscriptionsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textSubscriptions
-        galleryViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
         return root
     }
 
