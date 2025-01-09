@@ -67,7 +67,7 @@ class HomeFragment : Fragment() {
         webSocketClient.connectToWebSocket() { message ->
             // Handle incoming message
             // Update UI or handle the message as needed
-            Log.d("WebSocket", "Received message: $message")
+            //Log.d("WebSocket", "Received message: $message")
         }
 
         // Handle send button click
