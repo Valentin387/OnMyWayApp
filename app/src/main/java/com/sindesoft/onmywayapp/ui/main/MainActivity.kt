@@ -81,6 +81,7 @@ class MainActivity : AppCompatActivity() {
             .into(profileImage)
         navHeaderMainBinding.tvFullName.text = user.familyName + " " + user.givenName
         navHeaderMainBinding.tvEmail.text = user.email
+        navHeaderMainBinding.tvAssignedCode.text = user.assignedCode
 
         //Fine-grained permission handling here
         permissionHandler = CustomPermissionHandler(this)
