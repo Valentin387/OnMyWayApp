@@ -46,6 +46,12 @@ class CustomPermissionHandler (private val context: Context) {
             }
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(android.Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+        }
+
         // If we have permissions to request, request them
         if (permissionsNeeded.isNotEmpty()) {
             ActivityCompat.requestPermissions(activity, permissionsNeeded.toTypedArray(), PERMISSION_REQUEST_CODE)
@@ -102,6 +108,7 @@ class CustomPermissionHandler (private val context: Context) {
             android.Manifest.permission.INTERNET -> "permission_INTERNET"
             android.Manifest.permission.ACCESS_NETWORK_STATE -> "permission_ACCESS_NETWORK_STATE"
             android.Manifest.permission.POST_NOTIFICATIONS -> "permission_POST_NOTIFICATIONS"
+            android.Manifest.permission.ACTIVITY_RECOGNITION -> "permission_ACTIVITY_RECOGNITION"
             else -> permission
         }
     }

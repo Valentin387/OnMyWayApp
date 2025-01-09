@@ -32,6 +32,12 @@
         android:layout_height="wrap_content"
         android:text="Unconstraint battery for this app"/>
 
+    <CheckBox
+        android:id="@+id/permissionActivityRecognition"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Allow Activity Recognition"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

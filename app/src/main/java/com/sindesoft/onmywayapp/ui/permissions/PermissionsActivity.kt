@@ -50,6 +50,7 @@ class PermissionsActivity: AppCompatActivity() {
                         binding.permissionNotifications.isChecked = false
                         binding.permissionLocation.isChecked = false
                         binding.permissionBattery.isChecked = false
+                        binding.permissionActivityRecognition.isChecked = false
                     }
                     .show()
             }else{
@@ -95,6 +96,7 @@ class PermissionsActivity: AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             permissions.add(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            permissions.add(android.Manifest.permission.ACTIVITY_RECOGNITION)
         }
 
         permissions.forEach { permission ->
@@ -157,6 +159,21 @@ class PermissionsActivity: AppCompatActivity() {
                 } else {
                     Toast.makeText(this, "Battery optimization already disabled for this app.", Toast.LENGTH_SHORT).show()
                 }
+            }
+            updateSendButtonState()
+        }
+
+        binding.permissionActivityRecognition.setOnCheckedChangeListener { _, isChecked ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                handlePermission(
+                    isChecked,
+                    android.Manifest.permission.ACTIVITY_RECOGNITION
+                )
+            }else{
+                handlePermission(
+                    isChecked,
+                    android.Manifest.permission.INTERNET, //Default permission, automatically granted
+                )
             }
             updateSendButtonState()
         }
@@ -262,7 +279,8 @@ class PermissionsActivity: AppCompatActivity() {
         val checkBoxes = listOf(
             binding.permissionLocation,
             binding.permissionNotifications,
-            binding.permissionBattery
+            binding.permissionBattery,
+            binding.permissionActivityRecognition
         )
 
 
