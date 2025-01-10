@@ -13,4 +13,6 @@ data class User(
     val givenName: String,
     val familyName: String,
     val profilePicture: String? = null,
+    val geofenceRadius: Int,
+    val firstSignupTimestamp: String
 )

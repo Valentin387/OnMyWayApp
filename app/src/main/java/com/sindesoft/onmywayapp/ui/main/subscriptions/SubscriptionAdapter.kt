@@ -30,4 +30,11 @@ class SubscriptionAdapter (private var subscriptionList: List<User>, private val
         val item = subscriptionList[position]
         holder.render(item, onClickListener)
     }
+
+    fun updateList(newList: List<User>) {
+        val diffResult = SubscriptionDiffUtil(subscriptionList, newList)
+        val result = DiffUtil.calculateDiff(diffResult)
+        subscriptionList = newList
+        result.dispatchUpdatesTo(this)
+    }
 }
