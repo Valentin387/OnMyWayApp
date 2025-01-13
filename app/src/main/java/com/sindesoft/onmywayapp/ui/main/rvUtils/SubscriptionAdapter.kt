@@ -1,13 +1,14 @@
-package com.sindesoft.onmywayapp.ui.main.subscriptions
+package com.sindesoft.onmywayapp.ui.main.rvUtils
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.sindesoft.onmywayapp.R
+import com.sindesoft.onmywayapp.data.DTO.SubscriptionFetchResponse
 import com.sindesoft.onmywayapp.data.models.User
 
-class SubscriptionAdapter (private var subscriptionList: List<User>, private val onClickListener:(User) -> Unit) :
+class SubscriptionAdapter (private var subscriptionList: List<SubscriptionFetchResponse>, private val onClickListener:(SubscriptionFetchResponse) -> Unit) :
     RecyclerView.Adapter<SubscriptionViewHolder>()
 {
 
@@ -31,7 +32,7 @@ class SubscriptionAdapter (private var subscriptionList: List<User>, private val
         holder.render(item, onClickListener)
     }
 
-    fun updateList(newList: List<User>) {
+    fun updateList(newList: List<SubscriptionFetchResponse>) {
         val diffResult = SubscriptionDiffUtil(subscriptionList, newList)
         val result = DiffUtil.calculateDiff(diffResult)
         subscriptionList = newList

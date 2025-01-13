@@ -27,12 +27,12 @@ interface SubscriptionService {
     @GET("channels")
     suspend fun fetchMySubscriptions(
         @Query("userId") userId: String
-    ): retrofit2.Response<List<StatusSubscriptionFetchResponse>>
+    ): retrofit2.Response<StatusSubscriptionFetchResponse>
 
     @GET("fetch_subscribers/{id}")
     suspend fun fetchMySubscribers(
         @Path("id") channelId: String
-    ): retrofit2.Response<List<StatusSubscriptionFetchResponse>>
+    ): retrofit2.Response<StatusSubscriptionFetchResponse>
 
     @DELETE("delete/{id}")
     suspend fun deleteSubscription(
