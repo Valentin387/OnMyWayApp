@@ -71,15 +71,8 @@ class SubscriptionsFragment : Fragment() {
         //Fetch the subscriptions of the user
         val userId = fetchUserMongoIDFromPreferences()
 
-        lifecycleScope.launch(Dispatchers.IO){
-            withContext(Dispatchers.Main){
-                showLoadingSpinner()
-            }
-            subscriptionViewModel.fetchMySubscriptions(userId)
-            withContext(Dispatchers.Main){
-                hideLoadingSpinner()
-            }
-        }
+        showLoadingSpinner()
+        subscriptionViewModel.fetchMySubscriptions(userId)
 
         initRecyclerView()
 
@@ -98,16 +91,10 @@ class SubscriptionsFragment : Fragment() {
         addSubscriptionViewModel.code.observe(viewLifecycleOwner) { code ->
             code?.let {
                 // Call the service
-                lifecycleScope.launch(Dispatchers.IO) {
-
-                    subscriptionViewModel.addNewSubscription(userId, code)
-
-                    // Handle the code
-                    withContext(Dispatchers.Main){
-                        Toast.makeText(context, "Code: $code", Toast.LENGTH_SHORT).show()
-                        addSubscriptionViewModel.resetCode()
-                    }
-                }
+                subscriptionViewModel.addNewSubscription(userId, code)
+                // Handle the code
+                Toast.makeText(context, "Code: $code", Toast.LENGTH_SHORT).show()
+                addSubscriptionViewModel.resetCode()
             }
         }
     }
@@ -132,6 +119,7 @@ class SubscriptionsFragment : Fragment() {
         recyclerView.adapter = adapter
 
         subscriptionViewModel.subscriptionList.observe(viewLifecycleOwner) {
+            hideLoadingSpinner()
             adapter.updateList(it)
         }
 
