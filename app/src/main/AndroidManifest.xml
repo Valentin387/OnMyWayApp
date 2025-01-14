@@ -59,6 +59,24 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name=".utils.TransitionReceiver"
+            android:exported="false"
+            android:permission="com.google.android.gms.permission.ACTIVITY_RECOGNITION">
+            <intent-filter>
+                <action android:name="action.TRANSITIONS_DATA" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".utils.CurrentActivityReceiver"
+            android:exported="true"
+            android:permission="com.google.android.gms.permission.ACTIVITY_RECOGNITION">
+        </receiver>
+
+
+        <receiver android:name=".utils.MyAlarmReceiver"
+            android:exported="true">
+        </receiver>
+
     </application>
 
 </manifest>

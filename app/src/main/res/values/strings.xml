@@ -14,4 +14,6 @@
 
     <string name="notification_title">GPS Activated</string>
     <string name="notification_content">Don\'t close the app</string>
+    <string name="toast_tracking_started">Tracking started</string>
+    <string name="toast_tracking_stopped">Tracking stopped</string>
 </resources>

@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit
 
 class LocationService : Service(){
 
-    private var userInfo: String? = ""
     private var currentLocation: Location? = null
     private val speedThreshold: Float = 1.0f // Threshold for considering you are not significantly moving (in m/s) //1 m/s -> 3.6 km/h
     private var isThisServiceJustStarted = true
@@ -92,9 +91,6 @@ class LocationService : Service(){
             ACTION_START -> {
                 // Start location tracking
                 serviceScope.launch { start() }
-
-                // Retrieve the user object from the Intent
-                userInfo = intent.getStringExtra("user_info")
             }
             ACTION_STOP -> {
                 // Stop location tracking and disconnect the socket
@@ -153,12 +149,12 @@ class LocationService : Service(){
             //check if it´s time to push this selected point to the server
             if(locationTrackingSamples.size >= (maxTrackingSamples * slowingTrackingServiceFactor)){
                 //send it to the server with persistance = true
-                triggerLocationTracking(userInfo!!, it.latitude.toString(), it.longitude.toString(), it.speed.toString(), it.accuracy.toString(), true)
+                triggerLocationTracking(it.latitude.toString(), it.longitude.toString(), it.speed.toString(), it.accuracy.toString(), true)
                 //Log.d("LocationService", "Tracking trigger persistance = true")
                 locationTrackingSamples.clear()
             }else{
                 //send it to the server but with persistance = false
-                triggerLocationTracking(userInfo!!, it.latitude.toString(), it.longitude.toString(), it.speed.toString(), it.accuracy.toString(), false)
+                triggerLocationTracking(it.latitude.toString(), it.longitude.toString(), it.speed.toString(), it.accuracy.toString(), false)
                 //Log.d("LocationService", "Tracking trigger persistance = false")
             }
 
@@ -174,7 +170,7 @@ class LocationService : Service(){
         return user.id ?: ""
     }
 
-    private fun triggerLocationTracking(userInfoParameter: String, lat: String, lon: String, speed: String, accuracy: String, persistance: Boolean){
+    private fun triggerLocationTracking(lat: String, lon: String, speed: String, accuracy: String, persistance: Boolean){
 
         val userId = fetchUserMongoIDFromPreferences()
 
