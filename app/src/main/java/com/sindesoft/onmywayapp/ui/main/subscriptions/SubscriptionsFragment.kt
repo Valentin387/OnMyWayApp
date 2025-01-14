@@ -91,10 +91,10 @@ class SubscriptionsFragment : Fragment() {
         addSubscriptionViewModel.code.observe(viewLifecycleOwner) { code ->
             code?.let {
                 // Call the service
-                subscriptionViewModel.addNewSubscription(userId, code)
-                // Handle the code
-                Toast.makeText(context, "Code: $code", Toast.LENGTH_SHORT).show()
-                addSubscriptionViewModel.resetCode()
+                subscriptionViewModel.addNewSubscription(userId, code).observe(viewLifecycleOwner) { message ->
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    addSubscriptionViewModel.resetCode()
+                }
             }
         }
     }

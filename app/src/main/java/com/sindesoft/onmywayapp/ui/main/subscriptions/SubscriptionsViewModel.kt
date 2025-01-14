@@ -45,14 +45,17 @@ class SubscriptionsViewModel (
     }
 
     // Add a new subscription
-    fun addNewSubscription(mongoId: String, assignedCode: String){
+    fun addNewSubscription(mongoId: String, assignedCode: String): LiveData<String?>{
+        val result = MutableLiveData<String?>()
         viewModelScope.launch(Dispatchers.IO) {
-            val response = subscriptionRepository.addNewSubscription(mongoId, assignedCode)
-            if(response){
+            val message = subscriptionRepository.addNewSubscription(mongoId, assignedCode)
+            if(message != null){
                 // If the subscription was added successfully, fetch the updated list
                 fetchMySubscriptions(mongoId)
+                result.postValue(message)
             }
         }
+        return result
     }
 
 }

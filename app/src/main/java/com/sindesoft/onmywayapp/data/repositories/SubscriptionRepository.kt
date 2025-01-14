@@ -52,19 +52,19 @@ class SubscriptionRepository (
     }
 
     // Function to add a new subscription
-    suspend fun addNewSubscription(mongoId: String, assignedCode: String): Boolean{
+    suspend fun addNewSubscription(mongoId: String, assignedCode: String): String?{
         try {
             val response = subscriptionService.addNewSubscription(NewSubscriptionRequest(mongoId, assignedCode))
             if (response.isSuccessful) {
                 Log.d("SubscriptionRepository", "Subscription added successfully")
-                return true
+                return response.body()?.message // Return the server's message
             } else {
                 Log.e("SubscriptionRepository", "Failed to add subscription. Code: ${response.code()}")
-                return false
+                return "Failed to add subscription." // Default failure message
             }
         } catch (e: Exception) {
             Log.e("SubscriptionRepository", "Error adding subscription", e)
-            return false
+            return "Error adding subscription." // Error message
         }
     }
 }
