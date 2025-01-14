@@ -27,6 +27,14 @@
         android:theme="@style/Theme.OnMyWayApp"
         android:usesCleartextTraffic="true"
         tools:targetApi="34">
+
+        <service
+            android:name="com.valentinConTilde.onmywayapp.services.locationService.LocationService"
+            android:description="@string/notification_content"
+            android:exported="true"
+            android:permission="FOREGROUND_SERVICE"
+            android:foregroundServiceType="location" />
+
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
