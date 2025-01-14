@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.Gson
@@ -24,6 +25,9 @@ import com.sindesoft.onmywayapp.io.SubscriptionService
 import com.sindesoft.onmywayapp.ui.main.rvUtils.SubscriptionAdapter
 import com.sindesoft.onmywayapp.ui.main.rvUtils.SubscriptionViewHolder
 import com.sindesoft.onmywayapp.utils.EncryptedPrefsManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SubscriptionsFragment : Fragment() {
 
@@ -66,7 +70,16 @@ class SubscriptionsFragment : Fragment() {
 
         //Fetch the subscriptions of the user
         val userId = fetchUserMongoIDFromPreferences()
-        subscriptionViewModel.fetchMySubscriptions(userId)
+
+        lifecycleScope.launch(Dispatchers.IO){
+            withContext(Dispatchers.Main){
+                showLoadingSpinner()
+            }
+            subscriptionViewModel.fetchMySubscriptions(userId)
+            withContext(Dispatchers.Main){
+                hideLoadingSpinner()
+            }
+        }
 
         initRecyclerView()
 
@@ -75,11 +88,26 @@ class SubscriptionsFragment : Fragment() {
             dialog.show(parentFragmentManager, "NewSubscriptionDialogFragment")
         }
 
+        initNewCodeObserver()
+    }
+
+    private fun initNewCodeObserver(){
+        //Fetch the subscriptions of the user
+        val userId = fetchUserMongoIDFromPreferences()
+
         addSubscriptionViewModel.code.observe(viewLifecycleOwner) { code ->
             code?.let {
-                // Handle the code
-                Toast.makeText(context, "Code: $code", Toast.LENGTH_SHORT).show()
-                addSubscriptionViewModel.resetCode()
+                // Call the service
+                lifecycleScope.launch(Dispatchers.IO) {
+
+                    subscriptionViewModel.addNewSubscription(userId, code)
+
+                    // Handle the code
+                    withContext(Dispatchers.Main){
+                        Toast.makeText(context, "Code: $code", Toast.LENGTH_SHORT).show()
+                        addSubscriptionViewModel.resetCode()
+                    }
+                }
             }
         }
     }
@@ -140,4 +168,13 @@ class SubscriptionsFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    private fun showLoadingSpinner() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingSpinner() {
+        binding.progressBar.visibility = View.GONE
+    }
+
 }

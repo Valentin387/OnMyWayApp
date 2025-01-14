@@ -44,4 +44,15 @@ class SubscriptionsViewModel (
         }
     }
 
+    // Add a new subscription
+    fun addNewSubscription(mongoId: String, assignedCode: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = subscriptionRepository.addNewSubscription(mongoId, assignedCode)
+            if(response){
+                // If the subscription was added successfully, fetch the updated list
+                fetchMySubscriptions(mongoId)
+            }
+        }
+    }
+
 }

@@ -1,9 +1,13 @@
 package com.sindesoft.onmywayapp.data.repositories
 
 import android.util.Log
+import android.widget.Toast
+import com.sindesoft.onmywayapp.data.DTO.NewSubscriptionRequest
 import com.sindesoft.onmywayapp.data.DTO.StatusSubscriptionFetchResponse
 import com.sindesoft.onmywayapp.data.DTO.SubscriptionFetchResponse
 import com.sindesoft.onmywayapp.io.SubscriptionService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class SubscriptionRepository (
     private val subscriptionService: SubscriptionService // Retrofit service
@@ -44,6 +48,23 @@ class SubscriptionRepository (
         } catch (e: Exception) {
             Log.e("SubscriptionRepository", "Error deleting subscription", e)
             false
+        }
+    }
+
+    // Function to add a new subscription
+    suspend fun addNewSubscription(mongoId: String, assignedCode: String): Boolean{
+        try {
+            val response = subscriptionService.addNewSubscription(NewSubscriptionRequest(mongoId, assignedCode))
+            if (response.isSuccessful) {
+                Log.d("SubscriptionRepository", "Subscription added successfully")
+                return true
+            } else {
+                Log.e("SubscriptionRepository", "Failed to add subscription. Code: ${response.code()}")
+                return false
+            }
+        } catch (e: Exception) {
+            Log.e("SubscriptionRepository", "Error adding subscription", e)
+            return false
         }
     }
 }
