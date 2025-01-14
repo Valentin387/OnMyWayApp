@@ -29,4 +29,21 @@ class SubscriptionRepository (
             emptyList()
         }
     }
+
+    // Function to remove a subscription from the list
+    suspend fun deleteSubscription(subscriptionId: String): Boolean {
+        return try {
+            val response = subscriptionService.deleteSubscription(subscriptionId)
+            if (response.isSuccessful) {
+                Log.d("SubscriptionRepository", "Subscription deleted successfully")
+                true
+            } else {
+                Log.e("SubscriptionRepository", "Failed to delete subscription. Code: ${response.code()}")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("SubscriptionRepository", "Error deleting subscription", e)
+            false
+        }
+    }
 }

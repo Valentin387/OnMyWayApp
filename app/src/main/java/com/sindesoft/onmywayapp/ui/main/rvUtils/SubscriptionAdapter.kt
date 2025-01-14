@@ -6,9 +6,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.sindesoft.onmywayapp.R
 import com.sindesoft.onmywayapp.data.DTO.SubscriptionFetchResponse
-import com.sindesoft.onmywayapp.data.models.User
 
-class SubscriptionAdapter (private var subscriptionList: List<SubscriptionFetchResponse>, private val onClickListener:(SubscriptionFetchResponse) -> Unit) :
+class SubscriptionAdapter (
+    private var subscriptionList: List<SubscriptionFetchResponse>,
+    private val onClickListener:(SubscriptionFetchResponse) -> Unit,
+    private val onClickDeleted:(Int) -> Unit
+) :
     RecyclerView.Adapter<SubscriptionViewHolder>()
 {
 
@@ -29,7 +32,7 @@ class SubscriptionAdapter (private var subscriptionList: List<SubscriptionFetchR
 
     override fun onBindViewHolder(holder: SubscriptionViewHolder, position: Int) {
         val item = subscriptionList[position]
-        holder.render(item, onClickListener)
+        holder.render(item, onClickListener, onClickDeleted)
     }
 
     fun updateList(newList: List<SubscriptionFetchResponse>) {

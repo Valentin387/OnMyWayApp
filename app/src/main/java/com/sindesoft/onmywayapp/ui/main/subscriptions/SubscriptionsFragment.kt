@@ -74,11 +74,13 @@ class SubscriptionsFragment : Fragment() {
 
         val subscriptionList = subscriptionViewModel.subscriptionList.value ?: emptyList()
 
-        adapter = SubscriptionAdapter(subscriptionList) { subscription ->
-            onItemSelected(
-                subscription
-            )
-        }
+        adapter = SubscriptionAdapter(
+            subscriptionList = subscriptionList,
+            onClickListener = { subscription -> onItemSelected(subscription) },
+            onClickDeleted = { position ->
+                onDeletedItem(position)
+            }
+        )
 
         val decoration = DividerItemDecoration(context, llmanager.orientation)
 
@@ -94,7 +96,16 @@ class SubscriptionsFragment : Fragment() {
 
     }
 
-    fun onItemSelected(subscription: SubscriptionFetchResponse) {
+    private fun onDeletedItem(position: Int) {
+        val subscription = subscriptionViewModel.subscriptionList.value?.get(position)
+        subscription?.let {
+            subscriptionViewModel.deleteSubscription(it.subscriptionId ?: "")
+            Toast.makeText(context, "Deleted: ${subscription.givenName}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    private fun onItemSelected(subscription: SubscriptionFetchResponse) {
         //Handle item selection
         Toast.makeText(context, "Selected: ${subscription.givenName}", Toast.LENGTH_SHORT).show()
 
