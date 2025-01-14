@@ -19,6 +19,7 @@ import com.sindesoft.onmywayapp.data.DTO.SubscriptionFetchResponse
 import com.sindesoft.onmywayapp.data.models.User
 import com.sindesoft.onmywayapp.data.repositories.SubscriptionRepository
 import com.sindesoft.onmywayapp.databinding.FragmentSubscriptionsBinding
+import com.sindesoft.onmywayapp.databinding.NewSubscriptionFormBinding
 import com.sindesoft.onmywayapp.io.SubscriptionService
 import com.sindesoft.onmywayapp.ui.main.rvUtils.SubscriptionAdapter
 import com.sindesoft.onmywayapp.ui.main.rvUtils.SubscriptionViewHolder
@@ -29,6 +30,7 @@ class SubscriptionsFragment : Fragment() {
     private var _binding: FragmentSubscriptionsBinding? = null
     private lateinit var llmanager : LinearLayoutManager
     private lateinit var adapter : SubscriptionAdapter
+    private val addSubscriptionViewModel: AddSubscriptionViewModel by activityViewModels()
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -67,6 +69,19 @@ class SubscriptionsFragment : Fragment() {
         subscriptionViewModel.fetchMySubscriptions(userId)
 
         initRecyclerView()
+
+        binding.btNewSubscription.setOnClickListener{
+            val dialog = NewSubscriptionDialogFragment()
+            dialog.show(parentFragmentManager, "NewSubscriptionDialogFragment")
+        }
+
+        addSubscriptionViewModel.code.observe(viewLifecycleOwner) { code ->
+            code?.let {
+                // Handle the code
+                Toast.makeText(context, "Code: $code", Toast.LENGTH_SHORT).show()
+                addSubscriptionViewModel.resetCode()
+            }
+        }
     }
 
     private fun initRecyclerView(){
