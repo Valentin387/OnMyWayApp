@@ -67,4 +67,26 @@ class SubscriptionRepository (
             return "Error adding subscription." // Error message
         }
     }
+
+    // Function to fetch my subscribers
+    suspend fun fetchMySubscribers(userId: String): List<SubscriptionFetchResponse>? {
+        return try{
+            val response = subscriptionService.fetchMySubscribers(userId)
+            if (response.isSuccessful) {
+                Log.d("SubscriptionRepository", "Subscribers fetched successfully")
+                Log.d("SubscriptionRepository", "Response: ${response.body()?: emptyList()}")
+                // If successful, return the list of subscriptions
+                response.body()?: emptyList()
+            }else{
+                Log.e("SubscriptionRepository", "Failed to fetch subscribers. Code: ${response.code()}")
+                // If not successful, return a StatusResponse error
+                emptyList()
+            }
+
+        }catch (e: Exception){
+            //catch any exceptions
+            Log.e("SubscriptionRepository", "Error fetching subscribers", e)
+            emptyList()
+        }
+    }
 }
