@@ -274,11 +274,70 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         Log.d("MainActivity", "onStop")
+
+        unsubscribeTransitionReceiver()
+
+        scheduleAlarm(this)
+
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("MainActivity", "onDestroy")
+    }
+
+    private fun scheduleAlarm(context: Context) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, MyAlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            201,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val triggerTime = System.currentTimeMillis() + 1 * 5 * 1000 // First alarm in 5 seconds
+        val interval = 1 * 60 * 1000 // Repeat every 60 seconds
+
+        /*
+        val triggerTime02 = System.currentTimeMillis() + 1 * 60 * 1000 // First alarm in 60 seconds
+        Log.d("FirstFragment", "Scheduling alarm")
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime02,
+            pendingIntent
+        )*/
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,  // Use RTC_WAKEUP to ensure it triggers even if the device is asleep
+            triggerTime,
+            interval.toLong(),
+            pendingIntent
+        )
+    }
+
+    private fun unsubscribeTransitionReceiver() {
+        val myPendingIntent = PendingIntent.getBroadcast(
+            this,
+            101, // Same request code as when you registered the receiver
+            Intent(this, TransitionReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+
+        // Cancel the pending intent
+        val activityRecognitionClient = ActivityRecognition.getClient(this)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            activityRecognitionClient.removeActivityTransitionUpdates(myPendingIntent)
+                .addOnSuccessListener {
+                    Log.d("ActivityRecognition", "Successfully unregistered for transitions")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ActivityRecognition", "Failed to unregister for transitions: ${e.message}")
+                }
+        }
     }
 
     //this will be useful later on. Trust me
