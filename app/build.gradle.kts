@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.sindesoft.onmywayapp"
+    namespace = "com.valentinConTilde.onmywayapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.sindesoft.onmywayapp"
+        applicationId = "com.valentinConTilde.onmywayapp"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -95,6 +95,36 @@ dependencies {
 
     //Glide dependency
     implementation(libs.glide)
+
+    //Ktor - I think I never really used these 2:
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+
+    //location services
+    implementation(libs.google.play.services.location)
+
+    // swiperefreshlayout
+    implementation(libs.androidx.swiperefreshlayout)
+
+    //WorkManager
+
+    // (Java only)
+    implementation(libs.androidx.work.runtime)
+
+    // Kotlin + coroutines
+    implementation(libs.androidx.work.runtime.ktx)
+
+    // optional - RxJava2 support
+    implementation(libs.androidx.work.rxjava2)
+
+    // optional - GCMNetworkManager support
+    implementation(libs.androidx.work.gcm)
+
+    // optional - Test helpers
+    androidTestImplementation(libs.androidx.work.testing)
+
+    // optional - Multiprocess support
+    implementation(libs.androidx.work.multiprocess)
 
 
 }
