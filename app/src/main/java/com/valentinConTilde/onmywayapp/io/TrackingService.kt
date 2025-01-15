@@ -11,7 +11,7 @@ import retrofit2.http.POST
 
 interface TrackingService {
 
-    @POST("new_subscription")
+    @POST("new_userLocation")
     suspend fun uploadNewLocation(
         @Body userLocation: UserLocation
     ): retrofit2.Response<StatusResponse>

@@ -43,7 +43,7 @@ class LocationService : Service(){
 
     //frequency of the location tracking pushes to the tracking worker
     private val locationTrackingSamples = mutableListOf<Location>()
-    private val maxTrackingSamples = 10 // this was 10
+    private val maxTrackingSamples = 1 // this was 10
     private var slowingTrackingServiceFactor = 1 //previously this was slowingSampleTakingFactor
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) // Define scope with appropriate dispatcher
@@ -105,7 +105,7 @@ class LocationService : Service(){
     private fun start() {
         //Log.d("LocationService", "Service started")
 
-        locationClient.getLocationUpdates(5_000L) // every 5 seconds I get a new one
+        locationClient.getLocationUpdates(500L) // every  second I get 2 new ones
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
                 if (locationSamples.size >= maxSamples) {
