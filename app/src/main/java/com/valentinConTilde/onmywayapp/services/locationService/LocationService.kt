@@ -111,9 +111,8 @@ class LocationService : Service(){
         locationClient.getLocationUpdates(500L) // every  second I get 2 new ones
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
-                Log.d("LocationService", locationSamples.size.toString())
-
                 locationSamples.add(location)
+                Log.d("LocationService", locationSamples.size.toString())
 
                 if (locationSamples.size >= maxSamples) {
                     processLocationSamples()
