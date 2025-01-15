@@ -6,6 +6,7 @@ import android.content.IntentFilter
 import android.location.Location
 import android.os.BatteryManager
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
@@ -43,7 +44,7 @@ class LocationService : Service(){
 
     //frequency of the location tracking pushes to the tracking worker
     private val locationTrackingSamples = mutableListOf<Location>()
-    private val maxTrackingSamples = 1 // this was 10
+    private val maxTrackingSamples = 10 // this was 10
     private var slowingTrackingServiceFactor = 1 //previously this was slowingSampleTakingFactor
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) // Define scope with appropriate dispatcher
@@ -63,6 +64,8 @@ class LocationService : Service(){
 
     override fun onCreate() {
         super.onCreate()
+
+        Log.d("LocationService", "Service created")
 
         // Initialize properties here
         locationClient = DefaultLocationClient(
@@ -108,6 +111,10 @@ class LocationService : Service(){
         locationClient.getLocationUpdates(500L) // every  second I get 2 new ones
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
+                Log.d("LocationService", locationSamples.size.toString())
+
+                locationSamples.add(location)
+
                 if (locationSamples.size >= maxSamples) {
                     processLocationSamples()
                     // Clear the location samples list and start collecting again
@@ -120,6 +127,7 @@ class LocationService : Service(){
 
     //Function to optimize the location samples
     private fun processLocationSamples() {
+        Log.d("LocationService", "Processing location samples")
         // Create a copy to avoid concurrent modification
         val locationSamplesCopy = ArrayList(locationSamples)
 
@@ -148,11 +156,13 @@ class LocationService : Service(){
 
             //check if it´s time to push this selected point to the server
             if(locationTrackingSamples.size >= (maxTrackingSamples * slowingTrackingServiceFactor)){
+                Log.d("LocationService", "persistence = true")
                 //send it to the server with persistance = true
                 triggerLocationTracking(it.latitude.toString(), it.longitude.toString(), it.speed.toString(), it.accuracy.toString(), true)
                 //Log.d("LocationService", "Tracking trigger persistance = true")
                 locationTrackingSamples.clear()
             }else{
+                Log.d("LocationService", "persistence = false")
                 //send it to the server but with persistance = false
                 triggerLocationTracking(it.latitude.toString(), it.longitude.toString(), it.speed.toString(), it.accuracy.toString(), false)
                 //Log.d("LocationService", "Tracking trigger persistance = false")
@@ -170,7 +180,8 @@ class LocationService : Service(){
         return user.id ?: ""
     }
 
-    private fun triggerLocationTracking(lat: String, lon: String, speed: String, accuracy: String, persistance: Boolean){
+    private fun triggerLocationTracking(lat: String, lon: String, speed: String, accuracy: String, persistence: Boolean){
+        Log.d("LocationService", "Triggering location tracking")
 
         val userId = fetchUserMongoIDFromPreferences()
 
@@ -195,7 +206,7 @@ class LocationService : Service(){
             .putString("lon", lon)
             .putString("date", System.currentTimeMillis().toString())  //timestamp in milliseconds
             .putString("speed", speed)
-            .putBoolean("persistence", persistance)
+            .putBoolean("persistence", persistence)
             .putString("batteryPercentage", batteryPct.toString())
             .putString("applicationVersion", appNamePlusVersion)
             .putString("accuracy", accuracy)

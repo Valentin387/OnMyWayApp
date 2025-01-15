@@ -17,10 +17,12 @@ class LocationTrackingWorker (context: Context, workerParams: WorkerParameters) 
 
     override suspend fun doWork(): Result {
 
+        Log.d("LocationTrackingWorker", "Started")
+
         val userId = inputData.getString("userId")
         val lat = inputData.getString("lat")
         val lon = inputData.getString("lon")
-        val date = inputData.getString("timestamp")
+        val date = inputData.getString("date")
         val speed = inputData.getString("speed")
         val persistence = inputData.getBoolean("persistence", false)
         val batteryPercentage = inputData.getString("batteryPercentage")
