@@ -139,7 +139,7 @@ class LocationService : Service(){
 
         if(!isThisServiceJustStarted) {
             //do not consider the best location if the speed is below the threshold
-            if ((bestLocation?.speed ?: 0.0f) <= speedThreshold) {
+            if ((bestLocation?.speed ?: -1.0f) <= speedThreshold) {
                 bestLocation = null
             }
         }else{
