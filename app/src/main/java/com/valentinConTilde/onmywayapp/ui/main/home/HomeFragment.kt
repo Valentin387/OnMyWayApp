@@ -142,12 +142,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             if (location != null && location.accuracy < 10) {
                 val currentLatLng = LatLng(location.latitude, location.longitude)
-                googleMap.addMarker(
+                val marker = googleMap.addMarker(
                     MarkerOptions()
                         .position(currentLatLng)
                         .title("You")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 )
+                marker?.showInfoWindow()
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
                 Log.d("locationAccuracy", location.accuracy.toString())
             }
