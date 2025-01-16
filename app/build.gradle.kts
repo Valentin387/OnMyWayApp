@@ -1,5 +1,3 @@
-import java.io.FileInputStream
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -53,30 +51,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            /*// Load the properties from the local.properties file
-            val properties = Properties()
-            properties.load(FileInputStream(rootProject.file("local.properties")))
-
-            buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
-            buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
-            buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
-            buildConfigField("String", "GOOGLE_ID_TOKEN_SAMPLE", "\"${properties.getProperty("GOOGLE_ID_TOKEN_SAMPLE")}\"")
-            buildConfigField("String", "BAD_GOOGLE_ID_TOKEN", "\"${properties.getProperty("BAD_GOOGLE_ID_TOKEN")}\"")*/
             signingConfig = signingConfigs.getByName("debug")
         }
 
-        debug{
-            /*// Load the properties from the local.properties file
-            val properties = Properties()
-            properties.load(FileInputStream(rootProject.file("local.properties")))
-
-            buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
-            buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
-            buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
-            buildConfigField("String", "GOOGLE_ID_TOKEN_SAMPLE", "\"${properties.getProperty("GOOGLE_ID_TOKEN_SAMPLE")}\"")
-            buildConfigField("String", "BAD_GOOGLE_ID_TOKEN", "\"${properties.getProperty("BAD_GOOGLE_ID_TOKEN")}\"")*/
-        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -152,7 +129,7 @@ dependencies {
     implementation(libs.androidx.work.multiprocess)
 
     // Maps SDK for Android
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
+    implementation(libs.play.services.maps)
 
 
 }
