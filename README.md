@@ -11,4 +11,5 @@ ANDROID_CLIENT_ID=000000-aaaaaaaa.apps.googleusercontent.com
 WEB_APPLICATION_CLIENT_ID=100000-aaaaaaaa.apps.googleusercontent.com
 GOOGLE_ID_TOKEN_SAMPLE=xxxxxxxxx.xxxxxx.xxxxxx
 BAD_GOOGLE_ID_TOKEN=xxxxxxxxx.xxxxxx.xxxxxx
+MAPS_API_KEY=DEFAULT_API_KEY
 ```
