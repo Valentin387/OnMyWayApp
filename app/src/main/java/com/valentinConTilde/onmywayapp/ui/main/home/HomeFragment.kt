@@ -15,6 +15,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.valentinConTilde.onmywayapp.R
 import com.valentinConTilde.onmywayapp.databinding.FragmentHomeBinding
 import com.valentinConTilde.onmywayapp.io.WebSocketClient
 import kotlinx.coroutines.Dispatchers
@@ -43,12 +44,12 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     ): View {
         Log.d("HomeFragment", "onCreateView")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
         //Get the map fragment and set up the map
         val mapFragment = childFragmentManager.findFragmentById(com.valentinConTilde.onmywayapp.R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        val root: View = binding.root
         return root
     }
 
@@ -62,31 +63,37 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         Log.d("HomeFragment", "onResume")
+        (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onResume()
     }
 
     override fun onPause() {
         super.onPause()
         Log.d("HomeFragment", "onPause")
+        (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onPause()
     }
 
     override fun onStop() {
         super.onStop()
         Log.d("HomeFragment", "onStop")
+        (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("HomeFragment", "onDestroy")
+        (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onDestroy()
     }
 
     override fun onStart() {
         super.onStart()
         Log.d("HomeFragment", "onStart")
+        (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onStart()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         Log.d("HomeFragment", "onDestroyView")
+        (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onDestroyView()
 
         _binding = null
     }
