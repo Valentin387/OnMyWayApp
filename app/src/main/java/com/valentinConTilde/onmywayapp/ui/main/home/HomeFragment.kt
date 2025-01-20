@@ -22,12 +22,14 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
 import com.valentinConTilde.onmywayapp.R
+import com.valentinConTilde.onmywayapp.data.DTO.UserLocationInMap
 import com.valentinConTilde.onmywayapp.data.models.User
 import com.valentinConTilde.onmywayapp.databinding.FragmentHomeBinding
 import com.valentinConTilde.onmywayapp.io.WebSocketClient
 import com.valentinConTilde.onmywayapp.utils.EncryptedPrefsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import com.valentinConTilde.onmywayapp.data.customParsers.*
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
@@ -76,6 +78,12 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             // Handle incoming message
             // Update UI or handle the message as needed
             Log.d("WebSocket", "Received message: $message")
+            try{
+                val userLocationInMap = parseUserLocationInMap(message)
+                Log.d("WebSocket","Deserialized object: $userLocationInMap")
+            }catch(e: Exception){
+                Log.e("WebSocket", "Error deserializing message: ${e.message}")
+            }
         }
 
         // Handle send button click
