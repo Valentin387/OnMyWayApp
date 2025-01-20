@@ -20,9 +20,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.gson.Gson
 import com.valentinConTilde.onmywayapp.R
+import com.valentinConTilde.onmywayapp.data.models.User
 import com.valentinConTilde.onmywayapp.databinding.FragmentHomeBinding
 import com.valentinConTilde.onmywayapp.io.WebSocketClient
+import com.valentinConTilde.onmywayapp.utils.EncryptedPrefsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -62,7 +65,37 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
         Log.d("HomeFragment", "onViewCreated")
 
+        // Initialize WebSocketClient
+        webSocketClient = WebSocketClient()
 
+        // Get the userId from preferences
+        val userId = fetchUserMongoIDFromPreferences()
+
+        // Connect to WebSocket
+        webSocketClient.connectToWebSocket(userId = userId) { message ->
+            // Handle incoming message
+            // Update UI or handle the message as needed
+            Log.d("WebSocket", "Received message: $message")
+        }
+
+        // Handle send button click
+    /*    sendButton.setOnClickListener {
+            val message = messageInput.text.toString()
+            lifecycleScope.launch(Dispatchers.IO) {
+                webSocketClient.sendMessage(message)
+            }
+        }*/
+
+    }
+
+    private fun fetchUserMongoIDFromPreferences() : String {
+        //check is there is a token stored
+        //val preferences = requireActivity().getSharedPreferences("defaultPrefs", MODE_PRIVATE)
+        val preferences = EncryptedPrefsManager.getPreferences()
+        val userString = preferences.getString("user", null)
+        val gson = Gson()
+        val user = gson.fromJson(userString, User::class.java)
+        return user.id ?: ""
     }
 
     override fun onResume() {
@@ -101,6 +134,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         (childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?)?.onDestroyView()
 
         _binding = null
+        webSocketClient.closeWebSocket()  // Close WebSocket when fragment is destroyed
     }
 
     override fun onMapReady(map: GoogleMap) {

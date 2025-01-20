@@ -2,7 +2,7 @@
 
 # On My Way - New Generation Tracking Application
 
-#### Configuration in `local.properties`
+#### Create Configuration in `secrets.properties`
 Each user must define:
 
 ```
