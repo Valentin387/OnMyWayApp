@@ -35,6 +35,8 @@ import com.valentinConTilde.onmywayapp.io.SubscriptionService
 import com.valentinConTilde.onmywayapp.io.TrackingService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
 
@@ -164,6 +166,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 Speed: ${userLocation.speed} m/s
                 Battery: ${userLocation.batteryPercentage ?: "N/A"}%
                 Accuracy: ${userLocation.locationAccuracy} m
+                Date: ${formatDate(userLocation.date)}
                 App Version: ${userLocation.applicationVersion}
             """.trimIndent()
             // Create a new marker with a custom icon
@@ -222,6 +225,20 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
         _binding = null
         webSocketClient.closeWebSocket()  // Close WebSocket when fragment is destroyed
+    }
+
+    private fun formatDate(timestamp: String): String {
+        // Convert the timestamp string to Long
+        val timestampLong = timestamp.toLong()
+
+        // Create a SimpleDateFormat instance to define the date format
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+        // Convert the timestamp into a Date object
+        val date = Date(timestampLong)
+
+        // Format the Date object into a string with the desired format
+        return sdf.format(date)
     }
 
     override fun onMapReady(map: GoogleMap) {
