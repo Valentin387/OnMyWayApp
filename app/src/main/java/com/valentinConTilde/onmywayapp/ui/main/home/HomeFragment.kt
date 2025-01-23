@@ -31,6 +31,8 @@ import com.valentinConTilde.onmywayapp.utils.EncryptedPrefsManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import com.valentinConTilde.onmywayapp.data.customParsers.*
+import com.valentinConTilde.onmywayapp.io.SubscriptionService
+import com.valentinConTilde.onmywayapp.io.TrackingService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -43,6 +45,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
     private lateinit var webSocketClient: WebSocketClient
 
+    private val trackingService: TrackingService by lazy {
+        TrackingService.create(requireContext())
+    }
 
     private val homeViewModel: HomeViewModel by activityViewModels()
 
@@ -94,14 +99,45 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             }
         }
 
+        lifecycleScope.launch(Dispatchers.IO) {
+            try{
+                val userId = fetchUserMongoIDFromPreferences()
+                fetchAndDisplayLatestLocations(userId)
+
+            }catch(e: Exception){
+                Log.e("Error fetching the latest locations of mySubscriptions",e.toString())
+            }
+        }
+
         // Handle send button click
-    /*    sendButton.setOnClickListener {
+        /*sendButton.setOnClickListener {
             val message = messageInput.text.toString()
             lifecycleScope.launch(Dispatchers.IO) {
                 webSocketClient.sendMessage(message)
             }
         }*/
+    }
 
+    private suspend fun fetchAndDisplayLatestLocations(userId: String) {
+        try {
+            val response = trackingService.fetchMyChannelsLatestLatLong(userId)
+            if (response.isSuccessful && response.body() != null) {
+                val locations = response.body()!!
+                // Ensure the map is ready before adding markers
+                if (::googleMap.isInitialized) {
+                    locations.forEach { userLocation ->
+                        requireActivity().runOnUiThread {
+                            // Add a marker for each user location
+                            updateUserMarker(userLocation)
+                        }
+                    }
+                }
+            } else {
+                Log.e("HomeFragment", "Error fetching latest locations: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Exception fetching latest locations: ${e.message}")
+        }
     }
 
     private fun fetchUserMongoIDFromPreferences() : String {
@@ -224,19 +260,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             // for ActivityCompat#requestPermissions for more details.
             return
         }
+        //Code to extract once your current location and set a marker to it
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null && location.accuracy < 10) {
-                val currentLatLng = LatLng(location.latitude, location.longitude)
-                val marker = googleMap.addMarker(
-                    MarkerOptions()
-                        .position(currentLatLng)
-                        .title("You")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                )
-                marker?.showInfoWindow()
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
-                Log.d("locationAccuracy", location.accuracy.toString())
-            }
+            val currentLatLng = LatLng(location.latitude, location.longitude)
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
+            Log.d("locationAccuracy", location.accuracy.toString())
         }
 
     }
