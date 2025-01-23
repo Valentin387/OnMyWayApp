@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -21,6 +22,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
 import com.valentinConTilde.onmywayapp.R
 import com.valentinConTilde.onmywayapp.data.DTO.UserLocationInMap
@@ -41,6 +44,7 @@ import java.util.*
 class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private var _binding: FragmentHomeBinding? = null
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -64,8 +68,39 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         Log.d("HomeFragment", "onCreateView")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
+        // Initialize Bottom Sheet Behavior
+        val bottomSheet = binding.bottomSheet
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+        // Set Bottom Sheet to be always visible at the bottom
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheetBehavior.peekHeight = 200  // Adjust this to how much of the bottom sheet you want visible by default
+
+        // Listen for Bottom Sheet State Changes (optional)
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        // Bottom Sheet fully expanded
+                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        // Bottom Sheet collapsed
+                    }
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        // Bottom Sheet is being dragged
+                    }
+                    else -> { /* Other states */ }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // Optional: Add animations or effects based on slide offset
+            }
+        })
+
+
         //Get the map fragment and set up the map
-        val mapFragment = childFragmentManager.findFragmentById(com.valentinConTilde.onmywayapp.R.id.map) as SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         val root: View = binding.root
@@ -103,7 +138,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try{
-                val userId = fetchUserMongoIDFromPreferences()
                 fetchAndDisplayLatestLocations(userId)
 
             }catch(e: Exception){
