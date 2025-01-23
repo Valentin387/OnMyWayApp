@@ -24,19 +24,22 @@ class WebSocketClient {
     private lateinit var session: WebSocketSession
 
     // Connect to WebSocket
-    fun connectToWebSocket(onMessageReceived: (String) -> Unit) {
-        Log.d("WebSocket", "Connecting to WebSocket at $url")
+    fun connectToWebSocket(userId: String, onMessageReceived: (String) -> Unit) {
+        val webSocketUrl = "${url}socket/tracking_updates?userId=$userId"  // Append userId as query parameter
+        Log.d("WebSocket", "Connecting to WebSocket at $webSocketUrl")
+
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 client.ws(
                     method = HttpMethod.Get,
                     host = url, // replace with actual host if needed
                     //port = 443, // or another port if not using 443
-                    path = "/socket/infinitePing"
+                    path = "socket/tracking_updates?userId=$userId",
                 ) {
                     session = this
-                    Log.d("WebSocket", "Connected to WebSocket at $url")
+                    Log.d("WebSocket", "Connected to WebSocket at $webSocketUrl")
                     try {
+                        // Listen for incoming frames
                         for (frame in incoming) {
                             if (frame is Frame.Text) {
                                 onMessageReceived(frame.readText())

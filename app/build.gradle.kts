@@ -1,10 +1,33 @@
-import java.io.FileInputStream
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.mapsplatform.secrets.gradle)
 }
+
+buildscript {
+    dependencies {
+        classpath(libs.secrets.gradle.plugin)
+    }
+}
+
+secrets {
+    // To add your Maps API key to this project:
+    // 1. If the secrets.properties file does not exist, create it in the same folder as the local.properties file.
+    // 2. Add this line, where YOUR_API_KEY is your API key:
+    //        MAPS_API_KEY=YOUR_API_KEY
+    propertiesFileName = "secrets.properties"
+
+    // A properties file containing default secret values. This file can be
+    // checked in version control.
+    defaultPropertiesFileName = "local.defaults.properties"
+
+    // Configure which keys should be ignored by the plugin by providing regular expressions.
+    // "sdk.dir" is ignored by default.
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
+}
+
 
 android {
     namespace = "com.valentinConTilde.onmywayapp"
@@ -28,30 +51,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-
-            // Load the properties from the local.properties file
-            val properties = Properties()
-            properties.load(FileInputStream(rootProject.file("local.properties")))
-
-            buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
-            buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
-            buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
-            buildConfigField("String", "GOOGLE_ID_TOKEN_SAMPLE", "\"${properties.getProperty("GOOGLE_ID_TOKEN_SAMPLE")}\"")
-            buildConfigField("String", "BAD_GOOGLE_ID_TOKEN", "\"${properties.getProperty("BAD_GOOGLE_ID_TOKEN")}\"")
             signingConfig = signingConfigs.getByName("debug")
         }
 
-        debug{
-            // Load the properties from the local.properties file
-            val properties = Properties()
-            properties.load(FileInputStream(rootProject.file("local.properties")))
-
-            buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL")}\"")
-            buildConfigField("String", "ANDROID_CLIENT_ID", "\"${properties.getProperty("ANDROID_CLIENT_ID")}\"")
-            buildConfigField("String", "WEB_APPLICATION_CLIENT_ID", "\"${properties.getProperty("WEB_APPLICATION_CLIENT_ID")}\"")
-            buildConfigField("String", "GOOGLE_ID_TOKEN_SAMPLE", "\"${properties.getProperty("GOOGLE_ID_TOKEN_SAMPLE")}\"")
-            buildConfigField("String", "BAD_GOOGLE_ID_TOKEN", "\"${properties.getProperty("BAD_GOOGLE_ID_TOKEN")}\"")
-        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -125,6 +127,9 @@ dependencies {
 
     // optional - Multiprocess support
     implementation(libs.androidx.work.multiprocess)
+
+    // Maps SDK for Android
+    implementation(libs.play.services.maps)
 
 
 }
