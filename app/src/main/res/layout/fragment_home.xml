@@ -25,43 +25,60 @@
         android:elevation="8dp"
         android:padding="16dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
-
         <!-- Bottom Sheet Content -->
-        <TextView
+
+        <!-- Drag Indicator -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:background="@color/black"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@color/black"
+            android:clipToOutline="true" />
+
+        <!-- Dropdown Menu -->
+        <AutoCompleteTextView
+            android:id="@+id/markerDropdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Search Locations"
-            android:textSize="18sp"
-            android:paddingBottom="8dp" />
+            android:hint="Select a person"
+            android:inputType="none"
+            android:padding="12dp"
+            android:gravity="center"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:background="@drawable/rounded"
+            android:dropDownVerticalOffset="8dp"
+            android:dropDownHorizontalOffset="8dp" />
 
+        <!-- Date-Time Pickers -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="center_horizontal"
             android:weightSum="2">
 
-            <EditText
-                android:id="@+id/start_date"
-                android:layout_width="0dp"
+            <Button
+                android:id="@+id/startDateButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Start Date"
-                android:inputType="date" />
+                android:text="Start Date" />
 
-            <EditText
-                android:id="@+id/end_date"
-                android:layout_width="0dp"
+            <Button
+                android:id="@+id/endDateButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="End Date"
-                android:inputType="date" />
+                android:text="End Date"
+                android:layout_marginLeft="16dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="end"
+            android:gravity="center"
             android:paddingTop="8dp">
 
             <Button
