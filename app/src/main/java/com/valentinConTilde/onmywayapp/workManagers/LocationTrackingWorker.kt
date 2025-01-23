@@ -6,13 +6,14 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.valentinConTilde.onmywayapp.data.models.UserLocation
 import com.valentinConTilde.onmywayapp.io.TrackingService
+import com.valentinConTilde.onmywayapp.io.UserLocationBroadcastService
 
 
 class LocationTrackingWorker (context: Context, workerParams: WorkerParameters) : CoroutineWorker(context,
     workerParams
 ){
-    private val trackingService : TrackingService by lazy{
-        TrackingService.create(applicationContext)
+    private val userLocationBroadcastService : UserLocationBroadcastService by lazy{
+        UserLocationBroadcastService.create(applicationContext)
     }
 
     override suspend fun doWork(): Result {
@@ -44,7 +45,7 @@ class LocationTrackingWorker (context: Context, workerParams: WorkerParameters) 
 
         return try {
 
-            val response = trackingService.uploadNewLocation(userLocation)
+            val response = userLocationBroadcastService.uploadNewLocation(userLocation)
             if (response.isSuccessful) {
                 Log.d("Worker", userLocation.toString())
                 Result.success()
