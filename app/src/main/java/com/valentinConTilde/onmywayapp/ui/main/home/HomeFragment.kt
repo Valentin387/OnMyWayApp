@@ -19,6 +19,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
 import com.valentinConTilde.onmywayapp.R
@@ -31,6 +32,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import com.valentinConTilde.onmywayapp.data.customParsers.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
 
@@ -40,12 +42,12 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     // onDestroyView.
     private val binding get() = _binding!!
     private lateinit var webSocketClient: WebSocketClient
-    private val messageChannel = Channel<String>()
 
 
     private val homeViewModel: HomeViewModel by activityViewModels()
 
     private lateinit var googleMap: GoogleMap
+    private val userMarkers = mutableMapOf<String, Marker>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,6 +83,12 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             try{
                 val userLocationInMap = parseUserLocationInMap(message)
                 Log.d("WebSocket","Deserialized object: $userLocationInMap")
+                if(userLocationInMap != null){
+                    // Ensure marker updates run on the main thread
+                    requireActivity().runOnUiThread {
+                        updateUserMarker(userLocationInMap)
+                    }
+                }
             }catch(e: Exception){
                 Log.e("WebSocket", "Error deserializing message: ${e.message}")
             }
@@ -104,6 +112,31 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         val gson = Gson()
         val user = gson.fromJson(userString, User::class.java)
         return user.id ?: ""
+    }
+
+    private fun updateUserMarker(userLocation: UserLocationInMap) {
+        val userId = userLocation.userId ?: return // Skip if userId is null
+        val position = LatLng(userLocation.latitude.toDouble(), userLocation.longitude.toDouble())
+
+        // Check if a marker already exists for this user
+        val existingMarker = userMarkers[userId]
+        if (existingMarker != null) {
+            // Update the marker's position
+            existingMarker.position = position
+        } else {
+            // Create a new marker with a custom icon
+            val marker = googleMap.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .title("${userLocation.givenName} ${userLocation.familyName}")
+                    .snippet("Speed: ${userLocation.speed} m/s")
+                    .snippet("Battery: ${userLocation.batteryPercentage ?: "N/A"}%")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+            )
+            if (marker != null) {
+                userMarkers[userId] = marker
+            }
+        }
     }
 
     override fun onResume() {
