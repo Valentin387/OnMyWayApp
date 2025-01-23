@@ -260,6 +260,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             // for ActivityCompat#requestPermissions for more details.
             return
         }
+
+        // Set the custom info window adapter
+        googleMap.setInfoWindowAdapter(CustomInfoWindowAdapter(requireContext()))
+
         //Code to extract once your current location and set a marker to it
         fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
             val currentLatLng = LatLng(location.latitude, location.longitude)
