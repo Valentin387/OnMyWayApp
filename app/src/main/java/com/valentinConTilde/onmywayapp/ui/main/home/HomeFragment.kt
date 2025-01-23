@@ -1,14 +1,19 @@
 package com.valentinConTilde.onmywayapp.ui.main.home
 
 import android.Manifest
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -45,6 +50,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private var _binding: FragmentHomeBinding? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
+    private lateinit var markerDropdownAdapter: ArrayAdapter<String>
+    private lateinit var markerDropdown: AutoCompleteTextView
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -111,6 +118,56 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
         Log.d("HomeFragment", "onViewCreated")
 
+        // Dropdown Menu Setup
+        markerDropdown = binding.markerDropdown
+        markerDropdownAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            //userMarkers.values.map { it.title } // Populate with marker titles
+            mutableListOf<String>() // Initially empty
+        )
+        markerDropdown.setAdapter(markerDropdownAdapter)
+
+        // Variable to store selected userId
+        var selectedUserId: String? = null
+        markerDropdown.setOnItemClickListener { _, _, position, _ ->
+            val selectedTitle = markerDropdownAdapter.getItem(position)
+            selectedUserId = userMarkers.entries.firstOrNull { it.value.title == selectedTitle }?.key
+        }
+
+        // Date-Time Pickers
+        val startDateButton = binding.startDateButton
+        val endDateButton = binding.endDateButton
+
+        startDateButton.setOnClickListener {
+            showDateTimePicker { selectedDate ->
+                startDateButton.text = selectedDate
+            }
+        }
+
+        endDateButton.setOnClickListener {
+            showDateTimePicker { selectedDate ->
+                endDateButton.text = selectedDate
+            }
+        }
+
+        // Search and Clear Buttons
+        val searchButton = binding.searchButton
+        val clearButton = binding.clearButton
+
+        searchButton.setOnClickListener {
+            if (selectedUserId == null) {
+                Toast.makeText(requireContext(), "Please select a marker", Toast.LENGTH_SHORT).show()
+            } else {
+                TODO()
+                // Use selectedUserId and date range for search logic
+            }
+        }
+
+        clearButton.setOnClickListener {
+            // Clear search results logic
+        }
+
         // Initialize WebSocketClient
         webSocketClient = WebSocketClient()
 
@@ -139,6 +196,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         lifecycleScope.launch(Dispatchers.IO) {
             try{
                 fetchAndDisplayLatestLocations(userId)
+                // Update the dropdown menu after fetching is complete
+                withContext(Dispatchers.Main) {
+                    updateDropdownMenu()
+                }
 
             }catch(e: Exception){
                 Log.e("Error fetching the latest locations of mySubscriptions",e.toString())
@@ -152,6 +213,41 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 webSocketClient.sendMessage(message)
             }
         }*/
+    }
+
+    // Function to update the dropdown menu after fetching data
+    private fun updateDropdownMenu() {
+        Log.d("userMarkers", userMarkers.toString())
+
+        val markerTitles = userMarkers.values.map { it.title }
+        Log.d("markerTitles", markerTitles.toString())
+
+        markerDropdownAdapter.clear()
+        markerDropdownAdapter.addAll(markerTitles)
+        markerDropdownAdapter.notifyDataSetChanged()
+
+    }
+
+    private fun showDateTimePicker(onDateSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                TimePickerDialog(
+                    requireContext(),
+                    { _, hourOfDay, minute ->
+                        val formattedDate = "$year-${month + 1}-$dayOfMonth $hourOfDay:$minute"
+                        onDateSelected(formattedDate)
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    true
+                ).show()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     private suspend fun fetchAndDisplayLatestLocations(userId: String) {
