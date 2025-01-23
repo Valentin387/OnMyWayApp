@@ -124,19 +124,29 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             // Update the marker's position
             existingMarker.position = position
         } else {
+            val snippetText = """
+                Speed: ${userLocation.speed} m/s
+                Battery: ${userLocation.batteryPercentage ?: "N/A"}%
+                Accuracy: ${userLocation.locationAccuracy} m
+                App Version: ${userLocation.applicationVersion}
+            """.trimIndent()
             // Create a new marker with a custom icon
             val marker = googleMap.addMarker(
                 MarkerOptions()
                     .position(position)
                     .title("${userLocation.givenName} ${userLocation.familyName}")
-                    .snippet("Speed: ${userLocation.speed} m/s")
-                    .snippet("Battery: ${userLocation.batteryPercentage ?: "N/A"}%")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    .snippet(snippetText)
+                    .icon(BitmapDescriptorFactory.defaultMarker(getRandomMarkerColor()))
             )
             if (marker != null) {
                 userMarkers[userId] = marker
             }
         }
+    }
+
+    private fun getRandomMarkerColor(): Float {
+        // Hue values range from 0 to 360 (covering the entire color wheel)
+        return (0..360).random().toFloat()
     }
 
     override fun onResume() {
@@ -224,7 +234,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 )
                 marker?.showInfoWindow()
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
                 Log.d("locationAccuracy", location.accuracy.toString())
             }
         }
