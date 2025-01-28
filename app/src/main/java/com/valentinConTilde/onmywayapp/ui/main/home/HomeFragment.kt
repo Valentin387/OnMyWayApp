@@ -341,9 +341,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     private fun addMarkerToMap(userLocation: UserLocationInMap): Marker? {
         val position = LatLng(userLocation.latitude.toDouble(), userLocation.longitude.toDouble())
 
+        val speedKmH = String.format(Locale.ENGLISH, "%.2f", userLocation.speed.toFloat() * 3.6) // Convert m/s to km/h and format
+
         val snippetText = """
-        Speed: ${userLocation.speed} m/s
-        Battery: ${userLocation.batteryPercentage ?: "N/A"}%
+        Speed: $speedKmH km/h
+        Battery: ${userLocation.batteryPercentage ?: "N/A"}
         Accuracy: ${userLocation.locationAccuracy} m
         Date: ${formatDate(userLocation.date)}
         App Version: ${userLocation.applicationVersion}
@@ -378,8 +380,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             // Update the marker's position
             existingMarker.position = position
         } else {
+            val speedKmH = String.format(Locale.ENGLISH, "%.2f", userLocation.speed.toFloat() * 3.6) // Convert m/s to km/h and format
+
             val snippetText = """
-                Speed: ${userLocation.speed} m/s
+                Speed: $speedKmH km/h
                 Battery: ${userLocation.batteryPercentage ?: "N/A"}%
                 Accuracy: ${userLocation.locationAccuracy} m
                 Date: ${formatDate(userLocation.date)}
