@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,7 +16,9 @@ import android.widget.AutoCompleteTextView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -344,20 +349,33 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         val speedKmH = String.format(Locale.ENGLISH, "%.2f", userLocation.speed.toFloat() * 3.6) // Convert m/s to km/h and format
 
         val snippetText = """
-        Speed: $speedKmH km/h
-        Battery: ${userLocation.batteryPercentage ?: "N/A"}
-        Accuracy: ${userLocation.locationAccuracy} m
-        Date: ${formatDate(userLocation.date)}
-        App Version: ${userLocation.applicationVersion}
-    """.trimIndent()
+            Speed: $speedKmH km/h
+            Battery: ${userLocation.batteryPercentage ?: "N/A"}
+            Accuracy: ${userLocation.locationAccuracy} m
+            Date: ${formatDate(userLocation.date)}
+            App Version: ${userLocation.applicationVersion}
+        """.trimIndent()
 
         return googleMap.addMarker(
             MarkerOptions()
                 .position(position)
                 .title("${userLocation.givenName} ${userLocation.familyName}")
                 .snippet(snippetText)
-                .icon(BitmapDescriptorFactory.defaultMarker(getRandomMarkerColor()))
+                .icon(getBitmapDescriptorFromVector(R.drawable.baseline_my_location_24))
         )
+    }
+
+    private fun getBitmapDescriptorFromVector(@DrawableRes vectorResId: Int): BitmapDescriptor {
+        val vectorDrawable = ContextCompat.getDrawable(requireContext(), vectorResId) ?: return BitmapDescriptorFactory.defaultMarker()
+        val bitmap = Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        vectorDrawable.setBounds(0, 0, canvas.width, canvas.height)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
     private fun fetchUserMongoIDFromPreferences() : String {
