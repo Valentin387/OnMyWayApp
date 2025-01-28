@@ -175,20 +175,26 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             if (selectedUserId == null) {
                 Toast.makeText(requireContext(), "Please select a marker", Toast.LENGTH_SHORT).show()
             } else {
+                showLoadingSpinner()
                 // Use selectedUserId and date range for search logic
                 lifecycleScope.launch(Dispatchers.IO) {
                     fetchAndDisplayUserHistory(selectedUserId!!, startTimestamp, endTimestamp)
+                    withContext(Dispatchers.Main) {
+                        hideLoadingSpinner()
+                    }
                 }
             }
         }
 
         clearButton.setOnClickListener {
+            showLoadingSpinner()
             // Clear search results logic
             if (::googleMap.isInitialized) {
                 // Clear previous markers
                 historyMarkers.forEach { it.remove() }
                 historyMarkers.clear()
             }
+            hideLoadingSpinner()
         }
 
         // Initialize WebSocketClient
@@ -494,5 +500,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             Log.d("locationAccuracy", location.accuracy.toString())
         }
 
+    }
+
+    private fun showLoadingSpinner() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingSpinner() {
+        binding.progressBar.visibility = View.GONE
     }
 }
