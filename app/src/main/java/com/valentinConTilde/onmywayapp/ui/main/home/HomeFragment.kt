@@ -6,6 +6,7 @@ import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -32,6 +33,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
@@ -324,14 +326,24 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
                 requireActivity().runOnUiThread {
                     if (::googleMap.isInitialized) {
-                        // Clear previous markers
+                        // Clear previous markers and polylines
                         historyMarkers.forEach { it.remove() }
                         historyMarkers.clear()
+                        googleMap.clear() // This clears previous polylines as well
 
-                        // Add new markers
+                        val polylineOptions = PolylineOptions().width(5f).color(Color.BLUE).geodesic(true)
+
                         locations.forEach { userLocation ->
                             val marker = addMarkerToMap(userLocation)
-                            marker?.let { historyMarkers.add(it) }
+                            marker?.let {
+                                historyMarkers.add(it)
+                                polylineOptions.add(it.position) // Add marker position to polyline
+                            }
+                        }
+
+                        // Draw the polyline if we have at least two points
+                        if (polylineOptions.points.size > 1) {
+                            googleMap.addPolyline(polylineOptions)
                         }
                     }
                 }
@@ -342,6 +354,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             Log.e("HomeFragment", "Exception fetching user history: ${e.message}")
         }
     }
+
 
     private fun addMarkerToMap(userLocation: UserLocationInMap): Marker? {
         val position = LatLng(userLocation.latitude.toDouble(), userLocation.longitude.toDouble())
