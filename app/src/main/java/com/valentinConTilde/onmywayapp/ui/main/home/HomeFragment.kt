@@ -44,6 +44,9 @@ import com.valentinConTilde.onmywayapp.io.TrackingService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
@@ -66,6 +69,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
     private val userMarkers = mutableMapOf<String, Marker>()
+
+    private var startTimestamp = ""
+    private var endTimestamp = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -145,12 +151,18 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         startDateButton.setOnClickListener {
             showDateTimePicker { selectedDate ->
                 startDateButton.text = selectedDate
+                Log.d("startDate",selectedDate)
+                startTimestamp = convertToMillis(selectedDate).toString()
+                Log.d("startTimestamp",startTimestamp)
             }
         }
 
         endDateButton.setOnClickListener {
             showDateTimePicker { selectedDate ->
                 endDateButton.text = selectedDate
+                Log.d("endDate",selectedDate)
+                endTimestamp = convertToMillis(selectedDate).toString()
+                Log.d("endTimestamp",endTimestamp)
             }
         }
 
@@ -228,6 +240,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         markerDropdownAdapter.clear()
         markerDropdownAdapter.addAll(markerTitles)
         markerDropdownAdapter.notifyDataSetChanged()
+    }
+
+    fun convertToMillis(dateStr: String): Long {
+        val sdf = SimpleDateFormat("yyyy-M-d H:mm", Locale.getDefault()) // Match your format
+        sdf.timeZone = TimeZone.getDefault() // Ensure it reads local time correctly
+        val date = sdf.parse(dateStr) ?: return 0L
+        return date.time // Get timestamp in millis
     }
 
     private fun showDateTimePicker(onDateSelected: (String) -> Unit) {
