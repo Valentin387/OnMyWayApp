@@ -212,9 +212,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 val userLocationInMap = parseUserLocationInMap(message)
                 Log.d("WebSocket","Deserialized object: $userLocationInMap")
                 if(userLocationInMap != null){
-                    // Ensure marker updates run on the main thread
-                    requireActivity().runOnUiThread {
-                        updateUserMarker(userLocationInMap)
+                    val currentTimeMillis = System.currentTimeMillis()
+                    val oneMinuteAgo = currentTimeMillis - 60_000 // 1 minute in milliseconds
+                    if (userLocationInMap.date.toLong() >= oneMinuteAgo){
+                        // Ensure marker updates run on the main thread
+                        requireActivity().runOnUiThread {
+                            updateUserMarker(userLocationInMap)
+                        }
                     }
                 }
             }catch(e: Exception){
