@@ -135,6 +135,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             val selectedTitle = markerDropdownAdapter.getItem(position)
             Log.d("markerDropdown", "Selected title: $selectedTitle")
             selectedUserId = userMarkers.entries.firstOrNull { it.value.title == selectedTitle }?.key
+            Log.d("markerDropdown", "selectedUserId: $selectedUserId")
         }
 
         // Date-Time Pickers
