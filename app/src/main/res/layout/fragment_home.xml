@@ -19,7 +19,7 @@
     <LinearLayout
         android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:background="@drawable/rounded"
         android:orientation="vertical"
         android:elevation="8dp"
@@ -43,7 +43,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Select a person"
-            android:inputType="none"
             android:padding="12dp"
             android:gravity="center"
             android:textSize="21sp"

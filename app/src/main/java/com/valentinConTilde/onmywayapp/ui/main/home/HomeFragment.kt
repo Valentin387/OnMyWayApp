@@ -131,7 +131,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         // Variable to store selected userId
         var selectedUserId: String? = null
         markerDropdown.setOnItemClickListener { _, _, position, _ ->
+            Log.d("markerDropdown", "click detected at position: $position")
             val selectedTitle = markerDropdownAdapter.getItem(position)
+            Log.d("markerDropdown", "Selected title: $selectedTitle")
             selectedUserId = userMarkers.entries.firstOrNull { it.value.title == selectedTitle }?.key
         }
 
@@ -225,7 +227,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         markerDropdownAdapter.clear()
         markerDropdownAdapter.addAll(markerTitles)
         markerDropdownAdapter.notifyDataSetChanged()
-
     }
 
     private fun showDateTimePicker(onDateSelected: (String) -> Unit) {
