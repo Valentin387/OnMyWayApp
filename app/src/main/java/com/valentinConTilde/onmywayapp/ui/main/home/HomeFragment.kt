@@ -69,6 +69,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
     private val userMarkers = mutableMapOf<String, Marker>()
+    private val historyMarkers = mutableListOf<Marker>()
 
     private var startTimestamp = ""
     private var endTimestamp = ""
@@ -174,13 +175,20 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             if (selectedUserId == null) {
                 Toast.makeText(requireContext(), "Please select a marker", Toast.LENGTH_SHORT).show()
             } else {
-                TODO()
                 // Use selectedUserId and date range for search logic
+                lifecycleScope.launch(Dispatchers.IO) {
+                    fetchAndDisplayUserHistory(selectedUserId!!, startTimestamp, endTimestamp)
+                }
             }
         }
 
         clearButton.setOnClickListener {
             // Clear search results logic
+            if (::googleMap.isInitialized) {
+                // Clear previous markers
+                historyMarkers.forEach { it.remove() }
+                historyMarkers.clear()
+            }
         }
 
         // Initialize WebSocketClient
@@ -242,7 +250,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         markerDropdownAdapter.notifyDataSetChanged()
     }
 
-    fun convertToMillis(dateStr: String): Long {
+    private fun convertToMillis(dateStr: String): Long {
         val sdf = SimpleDateFormat("yyyy-M-d H:mm", Locale.getDefault()) // Match your format
         sdf.timeZone = TimeZone.getDefault() // Ensure it reads local time correctly
         val date = sdf.parse(dateStr) ?: return 0L
@@ -293,6 +301,53 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private suspend fun fetchAndDisplayUserHistory(userId: String, startMillis: String, endMillis: String) {
+        try {
+            val response = trackingService.fetchUserHistory(userId, startMillis, endMillis)
+            if (response.isSuccessful && response.body() != null) {
+                val locations = response.body()!!
+
+                requireActivity().runOnUiThread {
+                    if (::googleMap.isInitialized) {
+                        // Clear previous markers
+                        historyMarkers.forEach { it.remove() }
+                        historyMarkers.clear()
+
+                        // Add new markers
+                        locations.forEach { userLocation ->
+                            val marker = addMarkerToMap(userLocation)
+                            marker?.let { historyMarkers.add(it) }
+                        }
+                    }
+                }
+            } else {
+                Log.e("HomeFragment", "Error fetching user history: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Exception fetching user history: ${e.message}")
+        }
+    }
+
+    private fun addMarkerToMap(userLocation: UserLocationInMap): Marker? {
+        val position = LatLng(userLocation.latitude.toDouble(), userLocation.longitude.toDouble())
+
+        val snippetText = """
+        Speed: ${userLocation.speed} m/s
+        Battery: ${userLocation.batteryPercentage ?: "N/A"}%
+        Accuracy: ${userLocation.locationAccuracy} m
+        Date: ${formatDate(userLocation.date)}
+        App Version: ${userLocation.applicationVersion}
+    """.trimIndent()
+
+        return googleMap.addMarker(
+            MarkerOptions()
+                .position(position)
+                .title("${userLocation.givenName} ${userLocation.familyName}")
+                .snippet(snippetText)
+                .icon(BitmapDescriptorFactory.defaultMarker(getRandomMarkerColor()))
+        )
+    }
+
     private fun fetchUserMongoIDFromPreferences() : String {
         //check is there is a token stored
         //val preferences = requireActivity().getSharedPreferences("defaultPrefs", MODE_PRIVATE)
@@ -335,8 +390,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getRandomMarkerColor(): Float {
-        // Hue values range from 0 to 360 (covering the entire color wheel)
-        return (0..360).random().toFloat()
+        // Hue values should strictly range from 0 to 359, ensuring no 360
+        return (0 until 360).random().toFloat()
     }
 
     override fun onResume() {
