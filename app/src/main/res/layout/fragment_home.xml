@@ -100,6 +100,14 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/bottomSheetNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="If you want to track the routes of one of your subsciptions, just type the first letters of their usernames in the dropdown menu and select a valid date range"
+            android:textSize="20sp"
+            android:layout_gravity="center_horizontal" />
+
 
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

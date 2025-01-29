@@ -45,7 +45,7 @@ class LocationService : Service(){
     //frequency of the location tracking pushes to the tracking worker
     private val locationTrackingSamples = mutableListOf<Location>()
     private val maxTrackingSamples = 10 // this was 10
-    private var slowingTrackingServiceFactor = 1 //previously this was slowingSampleTakingFactor
+    private var slowingTrackingServiceFactor = 2 //previously this was slowingSampleTakingFactor
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO) // Define scope with appropriate dispatcher
 
