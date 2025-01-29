@@ -1,14 +1,25 @@
 package com.valentinConTilde.onmywayapp.ui.main.home
 
 import android.Manifest
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -17,10 +28,14 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
 import com.valentinConTilde.onmywayapp.R
 import com.valentinConTilde.onmywayapp.data.DTO.UserLocationInMap
@@ -36,11 +51,17 @@ import com.valentinConTilde.onmywayapp.io.TrackingService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private var _binding: FragmentHomeBinding? = null
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
+    private lateinit var markerDropdownAdapter: ArrayAdapter<String>
+    private lateinit var markerDropdown: AutoCompleteTextView
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -55,6 +76,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var googleMap: GoogleMap
     private val userMarkers = mutableMapOf<String, Marker>()
+    private val historyMarkers = mutableListOf<Marker>()
+
+    private var startTimestamp = ""
+    private var endTimestamp = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,8 +89,39 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         Log.d("HomeFragment", "onCreateView")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
+        // Initialize Bottom Sheet Behavior
+        val bottomSheet = binding.bottomSheet
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+
+        // Set Bottom Sheet to be always visible at the bottom
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheetBehavior.peekHeight = 200  // Adjust this to how much of the bottom sheet you want visible by default
+
+        // Listen for Bottom Sheet State Changes (optional)
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        // Bottom Sheet fully expanded
+                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        // Bottom Sheet collapsed
+                    }
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        // Bottom Sheet is being dragged
+                    }
+                    else -> { /* Other states */ }
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // Optional: Add animations or effects based on slide offset
+            }
+        })
+
+
         //Get the map fragment and set up the map
-        val mapFragment = childFragmentManager.findFragmentById(com.valentinConTilde.onmywayapp.R.id.map) as SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         val root: View = binding.root
@@ -75,6 +131,86 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("HomeFragment", "onViewCreated")
+
+        // Dropdown Menu Setup
+        markerDropdown = binding.markerDropdown
+        markerDropdownAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            //userMarkers.values.map { it.title } // Populate with marker titles
+            mutableListOf<String>() // Initially empty
+        )
+        markerDropdown.setAdapter(markerDropdownAdapter)
+
+        // Variable to store selected userId
+        var selectedUserId: String? = null
+        markerDropdown.setOnItemClickListener { _, _, position, _ ->
+            Log.d("markerDropdown", "click detected at position: $position")
+            val selectedTitle = markerDropdownAdapter.getItem(position)
+            Log.d("markerDropdown", "Selected title: $selectedTitle")
+            selectedUserId = userMarkers.entries.firstOrNull { it.value.title == selectedTitle }?.key
+            Log.d("markerDropdown", "selectedUserId: $selectedUserId")
+        }
+
+        // Date-Time Pickers
+        val startDateButton = binding.startDateButton
+        val endDateButton = binding.endDateButton
+
+        startDateButton.setOnClickListener {
+            showDateTimePicker { selectedDate ->
+                startDateButton.text = selectedDate
+                Log.d("startDate",selectedDate)
+                startTimestamp = convertToMillis(selectedDate).toString()
+                Log.d("startTimestamp",startTimestamp)
+            }
+        }
+
+        endDateButton.setOnClickListener {
+            showDateTimePicker { selectedDate ->
+                endDateButton.text = selectedDate
+                Log.d("endDate",selectedDate)
+                endTimestamp = convertToMillis(selectedDate).toString()
+                Log.d("endTimestamp",endTimestamp)
+            }
+        }
+
+        // Search and Clear Buttons
+        val searchButton = binding.searchButton
+        val clearButton = binding.clearButton
+
+        searchButton.setOnClickListener {
+            if (selectedUserId == null) {
+                Toast.makeText(requireContext(), "Please select a subscription", Toast.LENGTH_SHORT).show()
+            } else if(startTimestamp == "" || endTimestamp == "") {
+                Toast.makeText(requireContext(), "Invalid date range", Toast.LENGTH_SHORT).show()
+            }else {
+                showLoadingSpinner()
+                // Use selectedUserId and date range for search logic
+                lifecycleScope.launch(Dispatchers.IO) {
+                    fetchAndDisplayUserHistory(selectedUserId!!, startTimestamp, endTimestamp)
+                    withContext(Dispatchers.Main) {
+                        hideLoadingSpinner()
+                    }
+                }
+            }
+        }
+
+        clearButton.setOnClickListener {
+            selectedUserId = null
+            markerDropdown.setText("")
+            markerDropdown.clearFocus()
+            showLoadingSpinner()
+            // Clear search results logic
+            if (::googleMap.isInitialized) {
+                // Clear previous markers
+                historyMarkers.clear()
+                userMarkers.clear()
+                clearMapAndReloadLatestLocations()
+                startDateButton.text = "START DATE"
+                endDateButton.text = "END DATE"
+            }
+            hideLoadingSpinner()
+        }
 
         // Initialize WebSocketClient
         webSocketClient = WebSocketClient()
@@ -91,9 +227,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 val userLocationInMap = parseUserLocationInMap(message)
                 Log.d("WebSocket","Deserialized object: $userLocationInMap")
                 if(userLocationInMap != null){
-                    // Ensure marker updates run on the main thread
-                    requireActivity().runOnUiThread {
-                        updateUserMarker(userLocationInMap)
+                    val currentTimeMillis = System.currentTimeMillis()
+                    val oneMinuteAgo = currentTimeMillis - 60_000 // 1 minute in milliseconds
+                    if (userLocationInMap.date.toLong() >= oneMinuteAgo){
+                        // Ensure marker updates run on the main thread
+                        requireActivity().runOnUiThread {
+                            updateUserMarker(userLocationInMap)
+                        }
                     }
                 }
             }catch(e: Exception){
@@ -103,8 +243,11 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try{
-                val userId = fetchUserMongoIDFromPreferences()
                 fetchAndDisplayLatestLocations(userId)
+                // Update the dropdown menu after fetching is complete
+                withContext(Dispatchers.Main) {
+                    updateDropdownMenu()
+                }
 
             }catch(e: Exception){
                 Log.e("Error fetching the latest locations of mySubscriptions",e.toString())
@@ -118,6 +261,65 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 webSocketClient.sendMessage(message)
             }
         }*/
+    }
+
+    // Function to update the dropdown menu after fetching data
+    private fun updateDropdownMenu() {
+        Log.d("userMarkers", userMarkers.toString())
+
+        val markerTitles = userMarkers.values.map { it.title }
+        Log.d("markerTitles", markerTitles.toString())
+
+        markerDropdownAdapter.clear()
+        markerDropdownAdapter.addAll(markerTitles)
+        markerDropdownAdapter.notifyDataSetChanged()
+    }
+
+    private fun clearMapAndReloadLatestLocations(){
+        val userId = fetchUserMongoIDFromPreferences()
+        googleMap.clear() //it clears absolutely everything, all markers and lines
+
+        showLoadingSpinner()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try{
+                fetchAndDisplayLatestLocations(userId)
+                withContext(Dispatchers.Main) {
+                    hideLoadingSpinner()
+                }
+
+            }catch(e: Exception){
+                Log.e("Error fetching the latest locations of mySubscriptions",e.toString())
+            }
+        }
+    }
+
+    private fun convertToMillis(dateStr: String): Long {
+        val sdf = SimpleDateFormat("yyyy-M-d H:mm", Locale.getDefault()) // Match your format
+        sdf.timeZone = TimeZone.getDefault() // Ensure it reads local time correctly
+        val date = sdf.parse(dateStr) ?: return 0L
+        return date.time // Get timestamp in millis
+    }
+
+    private fun showDateTimePicker(onDateSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                TimePickerDialog(
+                    requireContext(),
+                    { _, hourOfDay, minute ->
+                        val formattedDate = "$year-${month + 1}-$dayOfMonth $hourOfDay:$minute"
+                        onDateSelected(formattedDate)
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    true
+                ).show()
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     private suspend fun fetchAndDisplayLatestLocations(userId: String) {
@@ -142,6 +344,80 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    private suspend fun fetchAndDisplayUserHistory(userId: String, startMillis: String, endMillis: String) {
+        try {
+            val response = trackingService.fetchUserHistory(userId, startMillis, endMillis)
+            if (response.isSuccessful && response.body() != null) {
+                val locations = response.body()!!
+
+                requireActivity().runOnUiThread {
+                    if (::googleMap.isInitialized) {
+                        // Clear previous markers and polylines
+                        historyMarkers.clear()
+                        userMarkers.clear()
+                        googleMap.clear() // This clears previous polylines as well
+                        clearMapAndReloadLatestLocations()
+
+                        val polylineOptions = PolylineOptions().width(5f).color(Color.BLUE).geodesic(true)
+
+                        locations.forEach { userLocation ->
+                            val marker = addMarkerToMap(userLocation)
+                            marker?.let {
+                                historyMarkers.add(it)
+                                polylineOptions.add(it.position) // Add marker position to polyline
+                            }
+                        }
+
+                        // Draw the polyline if we have at least two points
+                        if (polylineOptions.points.size > 1) {
+                            googleMap.addPolyline(polylineOptions)
+                        }
+                    }
+                }
+            } else {
+                Log.e("HomeFragment", "Error fetching user history: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Exception fetching user history: ${e.message}")
+        }
+    }
+
+
+    private fun addMarkerToMap(userLocation: UserLocationInMap): Marker? {
+        val position = LatLng(userLocation.latitude.toDouble(), userLocation.longitude.toDouble())
+
+        val speedKmH = String.format(Locale.ENGLISH, "%.2f", userLocation.speed.toFloat() * 3.6) // Convert m/s to km/h and format
+
+        val snippetText = """
+            Speed: $speedKmH km/h
+            Battery: ${userLocation.batteryPercentage ?: "N/A"}
+            Accuracy: ${userLocation.locationAccuracy} m
+            Date: ${formatDate(userLocation.date)}
+            App Version: ${userLocation.applicationVersion}
+        """.trimIndent()
+
+        return googleMap.addMarker(
+            MarkerOptions()
+                .position(position)
+                .title("${userLocation.givenName} ${userLocation.familyName}")
+                .snippet(snippetText)
+                .icon(getBitmapDescriptorFromVector(R.drawable.baseline_my_location_24))
+        )
+    }
+
+    private fun getBitmapDescriptorFromVector(@DrawableRes vectorResId: Int): BitmapDescriptor {
+        val vectorDrawable = ContextCompat.getDrawable(requireContext(), vectorResId) ?: return BitmapDescriptorFactory.defaultMarker()
+        val bitmap = Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        vectorDrawable.setBounds(0, 0, canvas.width, canvas.height)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
     private fun fetchUserMongoIDFromPreferences() : String {
         //check is there is a token stored
         //val preferences = requireActivity().getSharedPreferences("defaultPrefs", MODE_PRIVATE)
@@ -162,8 +438,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             // Update the marker's position
             existingMarker.position = position
         } else {
+            val speedKmH = String.format(Locale.ENGLISH, "%.2f", userLocation.speed.toFloat() * 3.6) // Convert m/s to km/h and format
+
             val snippetText = """
-                Speed: ${userLocation.speed} m/s
+                Speed: $speedKmH km/h
                 Battery: ${userLocation.batteryPercentage ?: "N/A"}%
                 Accuracy: ${userLocation.locationAccuracy} m
                 Date: ${formatDate(userLocation.date)}
@@ -184,8 +462,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getRandomMarkerColor(): Float {
-        // Hue values range from 0 to 360 (covering the entire color wheel)
-        return (0..360).random().toFloat()
+        // Hue values should strictly range from 0 to 359, ensuring no 360
+        return (0 until 360).random().toFloat()
     }
 
     override fun onResume() {
@@ -288,5 +566,13 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             Log.d("locationAccuracy", location.accuracy.toString())
         }
 
+    }
+
+    private fun showLoadingSpinner() {
+        binding.progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadingSpinner() {
+        binding.progressBar.visibility = View.GONE
     }
 }

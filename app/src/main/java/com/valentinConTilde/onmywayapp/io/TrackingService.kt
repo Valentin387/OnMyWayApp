@@ -24,6 +24,13 @@ interface TrackingService {
         @Query("userId") userId: String
     ): retrofit2.Response<List<UserLocationInMap>>
 
+    @GET("user_location_history")
+    suspend fun fetchUserHistory(
+        @Query("userId") userId: String,
+        @Query("startDate") startDateMillis : String,
+        @Query("endDate") endDateMillis : String
+    ): retrofit2.Response<List<UserLocationInMap>>
+
     companion object Factory {
         private const val BASE_URL = BuildConfig.BASE_URL + "tracking/"
 
