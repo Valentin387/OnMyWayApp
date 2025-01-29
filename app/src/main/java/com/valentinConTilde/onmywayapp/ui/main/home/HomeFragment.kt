@@ -181,7 +181,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         searchButton.setOnClickListener {
             if (selectedUserId == null) {
                 Toast.makeText(requireContext(), "Please select a subscription", Toast.LENGTH_SHORT).show()
-            } else {
+            } else if(startTimestamp == "" || endTimestamp == "") {
+                Toast.makeText(requireContext(), "Invalid date range", Toast.LENGTH_SHORT).show()
+            }else {
                 showLoadingSpinner()
                 // Use selectedUserId and date range for search logic
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -195,7 +197,8 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
         clearButton.setOnClickListener {
             selectedUserId = null
-            markerDropdown.clearListSelection()
+            markerDropdown.setText("")
+            markerDropdown.clearFocus()
             showLoadingSpinner()
             // Clear search results logic
             if (::googleMap.isInitialized) {
