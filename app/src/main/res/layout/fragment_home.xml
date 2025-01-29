@@ -38,20 +38,21 @@
             android:clipToOutline="true" />
 
         <!-- Dropdown Menu -->
+
+        <!-- Date-Time Pickers -->
         <AutoCompleteTextView
             android:id="@+id/markerDropdown"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Select a person"
-            android:padding="12dp"
-            android:gravity="center"
-            android:textSize="21sp"
-            android:textStyle="bold"
             android:background="@drawable/rounded"
+            android:dropDownHorizontalOffset="8dp"
             android:dropDownVerticalOffset="8dp"
-            android:dropDownHorizontalOffset="8dp" />
+            android:gravity="center"
+            android:hint="Search history by username"
+            android:padding="12dp"
+            android:textSize="21sp"
+            android:textStyle="bold" />
 
-        <!-- Date-Time Pickers -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

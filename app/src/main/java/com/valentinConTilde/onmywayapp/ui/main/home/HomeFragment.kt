@@ -180,7 +180,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
         searchButton.setOnClickListener {
             if (selectedUserId == null) {
-                Toast.makeText(requireContext(), "Please select a marker", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Please select a subscription", Toast.LENGTH_SHORT).show()
             } else {
                 showLoadingSpinner()
                 // Use selectedUserId and date range for search logic
@@ -194,12 +194,17 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         }
 
         clearButton.setOnClickListener {
+            selectedUserId = null
+            markerDropdown.clearListSelection()
             showLoadingSpinner()
             // Clear search results logic
             if (::googleMap.isInitialized) {
                 // Clear previous markers
-                historyMarkers.forEach { it.remove() }
                 historyMarkers.clear()
+                userMarkers.clear()
+                clearMapAndReloadLatestLocations()
+                startDateButton.text = "START DATE"
+                endDateButton.text = "END DATE"
             }
             hideLoadingSpinner()
         }
@@ -267,6 +272,24 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
         markerDropdownAdapter.notifyDataSetChanged()
     }
 
+    private fun clearMapAndReloadLatestLocations(){
+        val userId = fetchUserMongoIDFromPreferences()
+        googleMap.clear() //it clears absolutely everything, all markers and lines
+
+        showLoadingSpinner()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try{
+                fetchAndDisplayLatestLocations(userId)
+                withContext(Dispatchers.Main) {
+                    hideLoadingSpinner()
+                }
+
+            }catch(e: Exception){
+                Log.e("Error fetching the latest locations of mySubscriptions",e.toString())
+            }
+        }
+    }
+
     private fun convertToMillis(dateStr: String): Long {
         val sdf = SimpleDateFormat("yyyy-M-d H:mm", Locale.getDefault()) // Match your format
         sdf.timeZone = TimeZone.getDefault() // Ensure it reads local time correctly
@@ -327,9 +350,10 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
                 requireActivity().runOnUiThread {
                     if (::googleMap.isInitialized) {
                         // Clear previous markers and polylines
-                        historyMarkers.forEach { it.remove() }
                         historyMarkers.clear()
+                        userMarkers.clear()
                         googleMap.clear() // This clears previous polylines as well
+                        clearMapAndReloadLatestLocations()
 
                         val polylineOptions = PolylineOptions().width(5f).color(Color.BLUE).geodesic(true)
 
