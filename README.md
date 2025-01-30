@@ -1,6 +1,9 @@
 # OnMyWayApp
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.20-blueviolet?style=for-the-badge&logo=kotlin)
+![Android](https://img.shields.io/badge/Android-14-green?style=for-the-badge&logo=android)
 
 ## Project Overview
+This application is designed to track the location of users in real time. This prototype integrates various components such as network calls, local storage, background services, activity recognition and alarm manager.
 OnMyWayApp is a Kotlin-based Android application that integrates Google Services for authentication and Google Maps API for location-based functionalities. This README outlines the setup process and the requirements to get the project running in your local development environment.
 
 ## Prerequisites
@@ -72,6 +75,66 @@ To generate your SHA-1 key:
 ## Important Considerations
 - **`secrets.properties` is not included in version control.** Ensure it is excluded in your `.gitignore` file.
 - If you choose to leave `GOOGLE_ID_TOKEN_SAMPLE` and `BAD_GOOGLE_ID_TOKEN` blank, you can still proceed, but these are helpful for testing error scenarios in the authentication module.
+
+## Overview
+### Main Features
+- **Subscription mechanism**
+  - each user gets a 6 digits code, you can share this code with someone so they subscribe to you, once they have subscribed, they will be able to monitor your location 24/7
+  - there are views in the app to display either your subscriptions (people you follow) and your subscribers (people who follow you)
+  - at any moment you can remove any of your subscriptions or subscribers (privacy concerns) Note: if you delete X person but this person still has your 6 digit code, they can re-subscribe to you. You would have to crate another account with another gmail email or directly modify your 6 digit code in the database
+
+- **Web Socket Integration**:
+  - Real time tracking of your subscriptions on the map, you get to see useful information like speed and battery percentage
+  - You can select a user from your subscriptions, define a date range and fetch all the routes this user has made in that date range.
+
+- **Foreground Location Service**:
+   - High-accuracy location tracking.
+   - Implements algorithms to filter location noise and ensure reliable data.
+   -  It continues working in the background, even if the app is destroyed.
+
+- **Motion Detection**:
+   - Automatically detects lack of movement using Activity Recognition.
+   - Triggers a notification to the user.
+
+- **Background Tasks Using Work Managers**:
+   - **Real-Time Location Sender**: Continuously sends filtered location data to the server in real time with an automatic fallback mechanism for offline mode.
+   - **Background Tasks Using Work Managers**:
+   - **Real-Time Location Sender**: Continuously sends filtered location data to the server in real time with an automatic fallback mechanism for offline mode.
+   - **Alarm Manager Feature**: If the user destroys the app (removes it from the background apps) without logging out first, the system activates a mechanism of periodic self-scheduled alarms every minute. Without disturbing the user, these alarms trigger the Activity Recognition API to check if the user is moving. If the user is not moving, the system restarts the foreground location service with a foreground notification visible to the user.
+
+- **Data Encryption**:
+   - All personal information about the user stored locally is encrypted using `EncryptedSharedPreferences`.
+
+### Configuration
+
+#### `defaultConfig` in `build.gradle.kts`
+```kotlin
+defaultConfig {  
+    applicationId = "com.example.app02_v01"  
+    minSdk = 24  
+    targetSdk = 34  
+    versionCode = 1  
+    versionName = "1.0"  
+
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"  
+}  
+``` 
+
+#### Kotlin Version
+```properties
+kotlin = "2.0.20"  
+```  
+
+### Technology Stack
+- **Web Sockets**: Ktor Web Sockets version "2.3.13"
+- **Google Maps API**
+- **Google oAuth 2.0**
+- **Android SDK**: Min SDK 24, Target SDK 34
+- **Kotlin**: 2.0.20
+- **Work Manager**: For background tasks.
+- **EncryptedSharedPreferences**: For data encryption.
+- **Activity Recognition**: For motion detection.
+- **Alarm Manager**: For experimental background task.
 
 ---
 
