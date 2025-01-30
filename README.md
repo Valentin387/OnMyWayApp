@@ -79,9 +79,9 @@ To generate your SHA-1 key:
 ## Overview
 ### Main Features
 - **Subscription mechanism**
-  - each user gets a 6 digits code, you can share this code with someone so they subscribe to you, once they have subscribed, they will be able to monitor your location 24/7
-  - there are views in the app to display either your subscriptions (people you follow) and your subscribers (people who follow you)
-  - at any moment you can remove any of your subscriptions or subscribers (privacy concerns) Note: if you delete X person but this person still has your 6 digit code, they can re-subscribe to you. You would have to crate another account with another gmail email or directly modify your 6 digit code in the database
+  - Each user gets a 6 digits code, you can share this code with someone so they subscribe to you, once they have subscribed, they will be able to monitor your location 24/7
+  - There are views in the app to display either your subscriptions (people you follow) and your subscribers (people who follow you)
+  - At any moment you can remove any of your subscriptions or subscribers (privacy concerns) Note: if you delete X person but this person still has your 6 digit code, they can re-subscribe to you. You would have to crate another account with another gmail email or directly modify your 6 digit code in the database
 
 - **Web Socket Integration**:
   - Real time tracking of your subscriptions on the map, you get to see useful information like speed and battery percentage
@@ -135,6 +135,14 @@ kotlin = "2.0.20"
 - **EncryptedSharedPreferences**: For data encryption.
 - **Activity Recognition**: For motion detection.
 - **Alarm Manager**: For experimental background task.
+
+
+## And what about the backend for this beautiful frontend?
+Don't worry, I got you covered!! I am releasing the backend code as well, just clone this other repo and follow the readme instructions:
+
+```properties
+https://github.com/Valentin387/OnMyWayServer
+```  
 
 ---
 
